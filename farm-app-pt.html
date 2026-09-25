@@ -1,0 +1,2621 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a5632">
+<title>SONHOS VERDE - Gestão Agrícola</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2/dist/css/tom-select.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2/dist/js/tom-select.complete.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--green:#1a5632;--green-l:#2d7a4f;--bg:#f5f5f5;--card:#fff;--text:#1a1a1a;--muted:#666;--border:#e0e0e0;--danger:#d32f2f;--blue:#1565c0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+input,select,textarea,button{font-family:inherit;font-size:14px}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;transition:.2s}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:active{background:var(--green-l)}
+.btn-outline{background:transparent;border:2px solid var(--green);color:var(--green)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-sm{padding:6px 14px;font-size:13px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;outline:none;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--green-l);box-shadow:0 0 0 3px rgba(45,122,79,.15)}
+input[readonly]{background:#f0f0f0;color:#555;cursor:not-allowed}
+label{display:block;font-weight:600;margin-bottom:4px;color:var(--muted);font-size:13px}
+.form-group{margin-bottom:14px}
+.card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:12px}
+#loginScreen,#configScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--green),var(--green-l))}
+.login-box{background:#fff;border-radius:16px;padding:32px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.login-box h1{text-align:center;color:var(--green);margin-bottom:8px;font-size:22px}
+.login-box p{text-align:center;color:var(--muted);margin-bottom:24px;font-size:13px}
+#header{background:var(--green);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+#header h2{font-size:17px}
+#header .user-area{display:flex;align-items:center;gap:8px}
+#header .user-name{font-size:13px;opacity:.9}
+.logout-btn{background:rgba(255,255,255,.2);color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px}
+.dashboard{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:0 16px 8px}
+.group-header{display:flex;align-items:center;gap:12px;padding:20px 16px 4px;margin-top:8px}
+.group-header:first-child{margin-top:0;padding-top:12px}
+.group-icon{font-size:26px;line-height:1}
+.group-title{font-size:15px;font-weight:700;color:var(--green);letter-spacing:.3px}
+.group-desc{font-size:11px;color:var(--muted);margin-top:1px}
+.dash-card{background:#fff;border-radius:12px;padding:18px 12px;text-align:center;cursor:pointer;transition:.2s;border:2px solid transparent}
+.dash-card:active{transform:scale(.96);border-color:var(--green-l)}
+.dash-card .icon{font-size:32px;margin-bottom:8px}
+.dash-card .title{font-weight:700;font-size:13px}
+.dash-card .desc{font-size:11px;color:var(--muted);margin-top:4px}
+.section-header{display:flex;align-items:center;gap:8px;padding:16px 16px 8px;flex-wrap:wrap}
+.section-header h3{flex:1;font-size:16px}
+.back-btn{background:none;border:none;color:var(--green);font-weight:600;cursor:pointer;font-size:14px;padding:4px 8px}
+.list-container{padding:0 16px 16px}
+.list-item{background:#fff;border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);display:flex;align-items:center;gap:8px}
+.list-item .info{flex:1}
+.list-item .info .main{font-weight:600;font-size:14px}
+.list-item .info .sub{font-size:12px;color:var(--muted)}
+.list-item .actions{display:flex;gap:6px}
+.list-item .actions button{background:none;border:none;cursor:pointer;font-size:18px;padding:4px}
+.form-container{padding:0 16px 24px}
+.form-container .card{padding:20px}
+.inv-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.inv-row:last-child{border:none}
+.inv-row .label{color:var(--muted)}
+.inv-row .value{font-weight:700}
+.inv-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
+.inv-ok{background:#e8f5e9;color:#2e7d32}
+.inv-low{background:#fff3e0;color:#e65100}
+.inv-out{background:#ffebee;color:#c62828}
+.inv-warn{background:#fff8e1;color:#f57f17}
+.abc-a{background:#ffebee;color:#c62828}
+.abc-b{background:#fff3e0;color:#e65100}
+.abc-c{background:#e8f5e9;color:#2e7d32}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 24px;border-radius:8px;z-index:9999;font-size:14px;animation:fadeIn .3s;max-width:90%;text-align:center}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1}}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.fab{position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;border:none;font-size:28px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:50}
+.multi-check{display:flex;flex-wrap:wrap;gap:8px}
+.multi-check label{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:normal;background:#f5f5f5;padding:6px 10px;border-radius:6px;cursor:pointer}
+.multi-check input{width:auto}
+.calc-box{padding:12px;border-radius:8px;margin-top:12px;font-weight:600;text-align:center;font-size:13px;line-height:1.5}
+.calc-ok{background:#e8f5e9;color:#2e7d32}
+.calc-warn{background:#fff3e0;color:#e65100}
+.calc-err{background:#ffebee;color:#c62828}
+.section-label{font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px;padding-bottom:4px;border-bottom:2px solid var(--green)}
+.req-star{color:#d32f2f;font-weight:700}
+.field-error{border-color:#d32f2f !important;box-shadow:0 0 0 3px rgba(211,47,47,.15) !important}
+.report-summary{display:flex;justify-content:space-around;flex-wrap:wrap;gap:12px;text-align:center}
+.report-summary .num{font-size:24px;font-weight:700;color:var(--green)}
+.report-summary .lbl{font-size:12px;color:var(--muted)}
+.planned-inputs-box{background:#f9f9f9;padding:12px;border-radius:8px}
+.planned-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;background:#fff;padding:8px;border-radius:6px}
+.planned-row > div{display:flex;flex-direction:column}
+.planned-row label{font-size:11px;color:var(--muted);margin-bottom:2px}
+.planned-row input,.planned-row select{font-size:13px}
+.voided{opacity:.5;text-decoration:line-through}
+.slider-wrap{display:flex;align-items:center;gap:12px}
+.slider-wrap input[type=range]{flex:1;padding:0;height:6px}
+.slider-pct{min-width:50px;text-align:right;font-weight:700;color:var(--green)}
+.dt-row{display:flex;gap:8px}
+.dt-row > div{flex:1}
+.form-actions{display:flex;gap:8px;margin-top:8px}
+.form-actions .btn{flex:1}
+.perm-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee}
+.perm-row:last-child{border:none}
+.perm-select{width:auto;padding:4px 8px;font-size:13px}
+</style>
+</head>
+<body>
+
+<div id="configScreen" style="display:none">
+<div class="login-box">
+<h1>🔧 Configuração do Supabase</h1>
+<p>Insira as credenciais do seu projeto Supabase</p>
+<div class="form-group"><label>URL do Projeto</label><input id="sbUrl" placeholder="https://xxxx.supabase.co"></div>
+<div class="form-group"><label>Chave Anon</label><input id="sbKey" placeholder="eyJhbGciOi..." type="password"></div>
+<button class="btn btn-primary" style="width:100%" onclick="saveConfig()">Salvar e Continuar</button>
+</div>
+</div>
+
+<div id="loginScreen" style="display:none">
+<div class="login-box">
+<h1>🌾 SANTAGRO</h1>
+<p>Sistema de Gestão Agrícola</p>
+<div class="form-group"><label>Usuário</label><input id="loginUser" placeholder="Digite o usuário"></div>
+<div class="form-group"><label>Senha</label><input id="loginPass" type="password" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')doLogin()"></div>
+<button class="btn btn-primary" style="width:100%" onclick="doLogin()">Entrar</button>
+<div id="qrSection" style="margin-top:20px;text-align:center;border-top:1px solid #eee;padding-top:16px">
+  <p style="font-size:12px;color:#999;margin-bottom:8px">📱 Escaneie para abrir no celular</p>
+  <div id="loginQR"></div>
+</div>
+</div>
+</div>
+
+<div id="mainApp" style="display:none">
+<div id="header">
+<h2 id="headerTitle">🌾 SONHOS VERDE</h2>
+<div class="user-area">
+<span class="user-name" id="userName"></span>
+<button class="logout-btn" onclick="showChangePassword()" style="margin-right:6px">🔑 Senha</button>
+<button class="logout-btn" onclick="logout()">Sair</button>
+</div>
+</div>
+<div id="content"></div>
+</div>
+
+<script>
+// ============================================================
+// EMBEDDED CONFIG
+// ============================================================
+const EMBEDDED_URL = 'https://vkerkwgiokdgcvgswfzh.supabase.co';
+const EMBEDDED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZXJrd2dpb2tkZ2N2Z3N3ZnpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwOTg1MTQsImV4cCI6MjEwNTY3NDUxNH0.pHdOjnL5v3rX_s46MvqrmPiC6zu77nDfQX9Gtsek9jk';
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+const TANK_LOCATIONS = ["Posto", "Caminhão"];
+const FUELING_METHODS = ["Posto de Combustível", "Tambor de Óleo do Caminhão"];
+const STANDARD_RATE_UNITS = ["L/h", "L/100km", "L/ha"];
+const ABC_CLASSES = ["A", "B", "C"];
+const PRICE_DEVIATION_THRESHOLD = 5;
+
+const SEARCHABLE_LINK_TABLES = ['equipment','work_orders','inputs_inventory','invoices','inputs_per_work_order','parts_inventory','maintenance_logs'];
+
+// ============================================================
+// GROUPS
+// ============================================================
+const GROUPS = [
+  { key: "Master",      label: "Dados Mestres",  icon: "🗂️", desc: "Fornecedores, funcionários, talhões, equipamentos, insumos" },
+  { key: "Procurement", label: "Compras",  icon: "🧾", desc: "Notas fiscais de fornecedores" },
+  { key: "Fuel",        label: "Combustível",         icon: "⛽", desc: "Entrada, saída e estoque de combustível" },
+  { key: "Inputs",      label: "Insumos",       icon: "📦", desc: "Entrada, saída e estoque de insumos" },
+  { key: "Work",        label: "Ordens de Serviço",  icon: "📋", desc: "Ordens de serviço e execuções" },
+  { key: "Maintenance", label: "Manutenção",  icon: "🛠️", desc: "Registros de manutenção, peças, relatório de equipamentos" },
+  { key: "System",      label: "Sistema",       icon: "⚙️", desc: "Usuários e permissões" },
+];
+// ============================================================
+// TABLE DEFINITIONS
+// ============================================================
+const TABLES = {
+  suppliers: {
+    label: "Fornecedores", icon: "🏢", cat: "Master", group: "Master",
+    desc: "Gerenciar fornecedores",
+    defaultSort: { column: "supplier_name", ascending: true },
+    fields: [
+      {col:"supplier_code",label:"Código do Fornecedor",type:"text",required:true},
+      {col:"supplier_name",label:"Nome do Fornecedor",type:"text",required:true},
+      {col:"contact_person",label:"Pessoa de Contato",type:"text"},
+      {col:"phone",label:"Telefone",type:"text",required:true},
+      {col:"email",label:"E-mail",type:"text"},
+      {col:"address",label:"Endereço",type:"textarea"},
+      {col:"category",label:"Categoria",type:"text"},
+      {col:"notes",label:"Observações",type:"textarea"},
+    ]
+  },
+  staff: {
+    label: "Funcionários", icon: "👥", cat: "Master", group: "Master",
+    desc: "Gerenciar funcionários / operadores",
+    defaultSort: { column: "staff_name", ascending: true },
+    fields: [
+      {col:"staff_code",label:"Código do Funcionário",type:"text",required:true},
+      {col:"staff_name",label:"Nome Completo",type:"text",required:true},
+      {col:"role",label:"Função",type:"select",opts:["Gerente","Operador","Mecânico","Almoxarife","Motorista","Outro"],required:true},
+      {col:"phone",label:"Telefone",type:"text",required:true},
+      {col:"hire_date",label:"Data de Admissão",type:"date",required:true},
+      {col:"active",label:"Ativo",type:"select",opts:["true","false"],required:true},
+      {col:"notes",label:"Observações",type:"textarea"},
+    ]
+  },
+  fields: {
+    label: "Talhões", icon: "🗺️", cat: "Master", group: "Master",
+    desc: "Gerenciar talhões",
+    defaultSort: { column: "field_name", ascending: true },
+    fields: [
+      {col:"field_code",label:"Código do Talhão",type:"text",required:true},
+      {col:"field_name",label:"Nome do Talhão",type:"text",required:true},
+      {col:"area_ha",label:"Área (ha)",type:"number",required:true},
+      {col:"soil_type",label:"Tipo de Solo",type:"text"},
+      {col:"current_crop",label:"Cultura Atual",type:"text"},
+      {col:"status",label:"Status",type:"select",opts:["Ativo","Em Pousio","Inativo"],required:true},
+      {col:"notes",label:"Observações",type:"textarea"},
+    ]
+  },
+  lookup_values: {
+    label: "Valores de Consulta", icon: "📚", cat: "Master", group: "Master",
+    desc: "Dicionário universal",
+    defaultSort: { column: "category", ascending: true, secondaryColumn: "value", secondaryAscending: true },
+    fields: [
+      {col:"category",label:"Categoria",type:"select",opts:["fuel_type","input_category","unit","service_type","implement","equipment_type","equipment_status","output_type","movement_type","maintenance_type","maintenance_status","reading_type","part_category","warehouse_zone"],required:true},
+      {col:"value",label:"Valor (armazenado)",type:"text",required:true},
+      {col:"label",label:"Rótulo (exibição)",type:"text",required:true},
+      {col:"sort_order",label:"Ordem de Classificação",type:"number"},
+      {col:"active",label:"Ativo",type:"select",opts:["true","false"],required:true},
+    ]
+  },
+  equipment: {
+    label: "Equipamentos", icon: "🔧", cat: "Master", group: "Master",
+    desc: "Todos os equipamentos + taxas padrão de combustível",
+    defaultSort: { column: "equipment_name", ascending: true },
+    fields: [
+      {col:"equipment_code",label:"Código do Equipamento",type:"text",required:true},
+      {col:"equipment_name",label:"Nome do Equipamento",type:"text",required:true},
+      {col:"equipment_type",label:"Tipo",type:"lookup",lookupCategory:"equipment_type",required:true},
+      {col:"brand",label:"Marca",type:"text"},
+      {col:"model",label:"Modelo",type:"text"},
+      {col:"serial_no",label:"Nº de Série",type:"text"},
+      {col:"year",label:"Ano",type:"number",required:true},
+      {col:"acquisition_date",label:"Data de Aquisição",type:"date"},
+      {col:"status",label:"Status",type:"lookup",lookupCategory:"equipment_status",required:true},
+      {col:"hour_meter",label:"Horímetro Atual",type:"number",required:true,allowZero:true},
+      {col:"odometer",label:"Odômetro Atual (km)",type:"number",required:true,allowZero:true},
+      {col:"reading_type",label:"Tipo de Leitura",type:"lookup",lookupCategory:"reading_type",required:true},
+      {col:"tank_capacity",label:"Capacidade do Tanque (L)",type:"number",required:true,allowZero:true},
+      {col:"standard_rate",label:"Taxa Padrão",type:"number",required:true,allowZero:true},
+      {col:"standard_rate_unit",label:"Unidade da Taxa",type:"select",opts:STANDARD_RATE_UNITS,required:true},
+      {col:"max_allowed_rate",label:"Taxa Máxima Permitida",type:"number"},
+      {col:"min_allowed_rate",label:"Taxa Mínima Permitida",type:"number"},
+      {col:"notes",label:"Observações",type:"textarea"},
+    ]
+  },
+  inputs_inventory: {
+    label: "Cadastro de Insumos", icon: "📦", cat: "Inputs", group: "Master",
+    desc: "Lista mestra de todos os insumos",
+    defaultSort: { column: "input_name", ascending: true },
+    fields: [
+      {col:"input_code",label:"Código do Insumo",type:"text",required:true},
+      {col:"input_name",label:"Nome do Insumo",type:"text",required:true},
+      {col:"category",label:"Categoria",type:"lookup",lookupCategory:"input_category",required:true},
+      {col:"unit",label:"Unidade",type:"lookup",lookupCategory:"unit",required:true},
+      {col:"batch_no",label:"Nº do Lote",type:"text"},
+      {col:"expiry_date",label:"Data de Validade",type:"date"},
+      {col:"minimum_stock",label:"Estoque Mínimo",type:"number",required:true,allowZero:true},
+      {col:"standard_rate",label:"Taxa Padrão (por ha)",type:"number"},
+      {col:"supplier_id",label:"Fornecedor Padrão",type:"link",table:"suppliers",showField:"supplier_name"},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name"},
+      {col:"opening_stock",label:"Estoque Inicial",type:"number",required:true,allowZero:true},
+      {col:"opening_unit_price",label:"Preço Unitário Inicial",type:"number",allowZero:true},
+    ]
+  },
+  invoices: {
+    label: "Notas Fiscais", icon: "🧾", cat: "Master", group: "Procurement",
+    desc: "Notas fiscais de fornecedores",
+    defaultSort: { column: "invoice_date", ascending: false },
+    fields: [
+      {col:"invoice_no",label:"Nº da Nota",type:"text",required:true},
+      {col:"supplier_id",label:"Fornecedor",type:"link",table:"suppliers",showField:"supplier_name",required:true},
+      {col:"invoice_date",label:"Data da Nota",type:"date",required:true},
+      {col:"total_value",label:"Valor Total",type:"number",required:true,allowZero:true},
+      {col:"status",label:"Status",type:"select",opts:["Pendente","Pago","Vencido","Cancelado"],required:true},
+      {col:"notes",label:"Observações",type:"textarea"},
+    ]
+  },
+  fuel_intake: {
+    label: "Entrada de Combustível", icon: "⛽", cat: "Fuel", group: "Fuel",
+    desc: "Registrar compras de combustível",
+    defaultSort: { column: "intake_date", ascending: false },
+    fields: [
+      {col:"fuel_type",label:"Tipo de Combustível",type:"lookup",lookupCategory:"fuel_type",required:true,onchange:"autoFillFuelIntakePreview",section:"1. Combustível e Local"},
+      {col:"tank_location",label:"Local do Tanque",type:"select",opts:TANK_LOCATIONS,required:true,onchange:"autoFillFuelIntakePreview"},
+      {col:"current_avg_preview",label:"Preço Médio Atual (auto)",type:"number",readonly:true,previewOnly:true,section:"2. Compra"},
+      {col:"unit_price",label:"Preço Unitário",type:"number",required:true,allowZero:true,recalc:"fuelIntake"},
+      {col:"intake_quantity",label:"Quantidade de Entrada (L)",type:"number",required:true,recalc:"fuelIntake"},
+      {col:"new_avg_preview",label:"Novo Preço Médio Ponderado (prévia) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"deviation_preview",label:"Desvio vs Preço Médio Antigo (%) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"total_value",label:"Valor Total (auto = qtd × preço)",type:"number",readonly:true,previewOnly:true},
+      {col:"invoice_no",label:"Nº da Nota",type:"text",section:"3. Origem"},
+      {col:"invoice_id",label:"Nota Vinculada",type:"link",table:"invoices",showField:"invoice_no"},
+      {col:"supplier_id",label:"Fornecedor",type:"link",table:"suppliers",showField:"supplier_name",required:true},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name",required:true},
+      {col:"intake_date",label:"Data de Entrada",type:"date",required:true,section:"4. Detalhes"},
+      {col:"price_deviation_pct",label:"Desvio Aprovado % (auditoria)",type:"number",readonly:true,previewOnly:true,section:"5. Auditoria de Aprovação"},
+      {col:"approved_by",label:"Aprovado Por",type:"number",readonly:true,previewOnly:true},
+      {col:"approved_at",label:"Aprovado Em",type:"datetime",readonly:true,previewOnly:true},
+      {col:"approval_note",label:"Nota de Aprovação",type:"textarea",readonly:true,previewOnly:true},
+    ]
+  },
+  fuel_output: {
+    label: "Saída de Combustível", icon: "🚜", cat: "Fuel", group: "Fuel",
+    desc: "Registrar consumo de combustível",
+    defaultSort: { column: "date_time", ascending: false },
+    fields: [
+      {col:"equipment_id",label:"Equipamento",type:"link",table:"equipment",showField:"equipment_name",onchange:"autoFillPreviousReading",required:true,section:"1. Equipamento e Abastecimento"},
+      {col:"fuel_type",label:"Tipo de Combustível",type:"lookup",lookupCategory:"fuel_type",required:true,onchange:"autoFillFuelOutputPrice"},
+      {col:"reading_type",label:"Tipo de Leitura",type:"lookup",lookupCategory:"reading_type",required:true},
+      {col:"tank_location",label:"Local do Tanque",type:"select",opts:TANK_LOCATIONS,required:true,onchange:"autoFillFuelOutputPrice"},
+      {col:"previous_reading",label:"Leitura Anterior do Medidor (auto)",type:"number",readonly:true,section:"2. Leitura do Medidor"},
+      {col:"current_reading",label:"Leitura Atual do Medidor",type:"number",recalc:true,required:true},
+      {col:"fueling_method",label:"Método de Abastecimento",type:"select",opts:FUELING_METHODS,required:true,section:"3. Origem do Abastecimento"},
+      {col:"liters_added",label:"Litros Adicionados (L)",type:"number",required:true,recalc:true},
+      {col:"fuel_used",label:"Combustível Realmente Consumido (L) — auto",type:"number",readonly:true,section:"4. Cálculo Automático"},
+      {col:"consumption_rate",label:"Taxa de Consumo — auto",type:"number",readonly:true},
+      {col:"system_unit_price",label:"Preço Unitário do Sistema (L) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"unit_price",label:"Preço Unitário (bloqueado)",type:"number",readonly:true,previewOnly:true},
+      {col:"total_value",label:"Valor da Saída (auto) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"date_time",label:"Data e Hora",type:"datetime",required:true,section:"5. Detalhes"},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name",required:true},
+      {col:"observations",label:"Observações",type:"textarea"},
+    ]
+  },
+  fuel_inventory: { label:"Estoque de Combustível", icon:"📊", cat:"Dashboard", group:"Fuel", desc:"Estoque de combustível por local", isInventoryDashboard:'fuel' },
+
+  inputs_intake: {
+    label: "Entrada de Insumos", icon: "📥", cat: "Inputs", group: "Inputs",
+    desc: "Registrar compras de insumos",
+    defaultSort: { column: "intake_date", ascending: false },
+    fields: [
+      {col:"input_id",label:"Insumo",type:"link",table:"inputs_inventory",showField:"input_name",onchange:"autoFillIntakePreview",required:true,section:"1. Item"},
+      {col:"unit_display",label:"Unidade (auto do item)",type:"linkedreadonly"},
+      {col:"current_avg_preview",label:"Preço Médio Atual do Sistema (auto)",type:"number",readonly:true,previewOnly:true},
+      {col:"intake_quantity",label:"Quantidade de Entrada",type:"number",required:true,recalc:"intake"},
+      {col:"unit_price",label:"Preço Unitário",type:"number",required:true,allowZero:true,recalc:"intake"},
+      {col:"new_avg_preview",label:"Novo Preço Médio Ponderado (prévia) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"deviation_preview",label:"Desvio vs Preço Médio Antigo (%) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"total_value",label:"Valor Total (auto = qtd × preço)",type:"number",readonly:true,previewOnly:true},
+      {col:"supplier_id",label:"Fornecedor",type:"link",table:"suppliers",showField:"supplier_name",required:true,section:"2. Origem"},
+      {col:"invoice_id",label:"Nota Vinculada",type:"link",table:"invoices",showField:"invoice_no"},
+      {col:"invoice_no",label:"Nº da Nota (manual)",type:"text"},
+      {col:"batch_no",label:"Nº do Lote",type:"text"},
+      {col:"expiry_date",label:"Data de Validade",type:"date"},
+      {col:"intake_date",label:"Data de Entrada",type:"date",required:true,section:"3. Detalhes"},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name",required:true},
+      {col:"price_deviation_pct",label:"Desvio Aprovado % (auditoria)",type:"number",readonly:true,previewOnly:true,section:"4. Auditoria de Aprovação"},
+      {col:"approved_by",label:"Aprovado Por (ID do usuário)",type:"number",readonly:true,previewOnly:true},
+      {col:"approved_at",label:"Aprovado Em",type:"datetime",readonly:true,previewOnly:true},
+      {col:"approval_note",label:"Nota de Aprovação",type:"textarea",readonly:true,previewOnly:true},
+    ]
+  },
+  inputs_output: {
+    label: "Saída de Insumos", icon: "📤", cat: "Inputs", group: "Inputs",
+    desc: "Registrar saída de insumos (vinculada à Ordem de Serviço)",
+    defaultSort: { column: "output_date", ascending: false },
+    autoNumber: { field: "exit_number", prefix: "EX-", digits: 3 },
+    fields: [
+      {col:"exit_number",label:"Número de Saída (auto)",type:"text",readonly:true,previewOnly:true,section:"1. Informações de Saída"},
+      {col:"work_order_id",label:"Ordem de Serviço (selecione primeiro)",type:"link",table:"work_orders",showField:"task_number",onchange:"filterOutputInputs",required:true,section:"2. Item e Ordem de Serviço"},
+      {col:"input_id",label:"Insumo (apenas planejado para esta OS)",type:"link",table:"inputs_inventory",showField:"input_name",onchange:"autoFillInputUnit",required:true},
+      {col:"unit_display",label:"Unidade (auto do item)",type:"linkedreadonly"},
+      {col:"system_unit_price",label:"Preço Unitário do Sistema (auto, bloqueado)",type:"number",readonly:true,previewOnly:true,section:"3. Detalhes da Saída"},
+      {col:"output_type",label:"Tipo de Saída",type:"lookup",lookupCategory:"output_type",required:true},
+      {col:"output_date",label:"Data de Saída",type:"date",required:true},
+      {col:"actual_output_quantity",label:"Quantidade Real de Saída",type:"number",required:true,recalc:"exitCost"},
+      {col:"unit_price",label:"Preço Unitário (bloqueado, = média do sistema)",type:"number",readonly:true,previewOnly:true},
+      {col:"total_value",label:"Valor Total (auto)",type:"number",readonly:true,previewOnly:true},
+      {col:"discrepancy_reason",label:"Motivo de Divergência / Perda",type:"textarea",section:"4. Observações"},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name",required:true},
+    ]
+  },
+  inventory_movements: {
+    label: "Movimentações de Estoque", icon: "🔄", cat: "Inputs", group: "Inputs",
+    desc: "Devoluções / contagens / ajustes",
+    defaultSort: { column: "movement_date", ascending: false },
+    fields: [
+      {col:"input_id",label:"Insumo",type:"link",table:"inputs_inventory",showField:"input_name",onchange:"autoFillInputUnit",required:true,section:"1. Item"},
+      {col:"unit_display",label:"Unidade (auto do item)",type:"linkedreadonly"},
+      {col:"movement_type",label:"Tipo de Movimentação",type:"lookup",lookupCategory:"movement_type",required:true},
+      {col:"quantity",label:"Quantidade (+ adiciona, − subtrai)",type:"number",required:true,allowZero:true},
+      {col:"movement_date",label:"Data da Movimentação",type:"date",required:true,section:"2. Detalhes"},
+      {col:"reason",label:"Motivo",type:"textarea",required:true},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name",required:true},
+    ]
+  },
+  inputs_inventory_view: { label:"Estoque de Insumos", icon:"📊", cat:"Dashboard", group:"Inputs", desc:"Níveis de estoque de insumos (auto)", isInventoryDashboard:'inputs' },
+
+  work_orders: {
+    label: "Ordens de Serviço", icon: "📋", cat: "Work", group: "Work",
+    desc: "Criar ordens de serviço com insumos planejados",
+    defaultSort: { column: "task_date", ascending: false },
+    hasPlannedInputs: true,
+    autoNumber: { field: "task_number", prefix: "OS-", digits: 3 },
+    fields: [
+      {col:"task_number",label:"Número da Tarefa (auto)",type:"text",readonly:true,previewOnly:true},
+      {col:"staff_id",label:"Operador",type:"link",table:"staff",showField:"staff_name",required:true},
+      {col:"task_date",label:"Data da Tarefa",type:"date",required:true},
+      {col:"planned_service_type",label:"Tipo de Serviço Planejado",type:"lookup",lookupCategory:"service_type",required:true},
+      {col:"work_description",label:"Descrição do Trabalho",type:"textarea",required:true},
+      {col:"planned_area_ha",label:"Área Planejada (ha)",type:"number",required:true},
+      {col:"field_id",label:"Local de Trabalho (Talhão)",type:"link",table:"fields",showField:"field_name",required:true},
+      {col:"equipment_ids",label:"Equipamentos (selecione um ou mais)",type:"multilink",table:"equipment",showField:"equipment_name",required:true},
+    ]
+  },
+  work_order_execution: {
+    label: "Execução de OS", icon: "✅", cat: "Work", group: "Work",
+    desc: "Registrar execução real do trabalho",
+    defaultSort: { column: "start_time", ascending: false },
+    fields: [
+      {col:"task_id",label:"Ordem de Serviço",type:"link",table:"work_orders",showField:"task_number",onchange:"autoFillFromWorkOrder",required:true,section:"1. Ordem de Serviço"},
+      {col:"service_type_actual",label:"Tipo de Serviço",type:"lookup",lookupCategory:"service_type",required:true,readonly:true},
+      {col:"field_id",label:"Local de Trabalho",type:"link",table:"fields",showField:"field_name",required:true,readonly:true},
+      {col:"staff_id",label:"Operador",type:"link",table:"staff",showField:"staff_name",required:true},
+      {col:"start_time",label:"Hora de Início",type:"datetime",required:true,onchange:"recalcWorkOrderExecution",section:"2. Tempo e Medidor"},
+      {col:"end_time",label:"Hora de Término",type:"datetime",required:true,onchange:"recalcWorkOrderExecution"},
+      {col:"initial_hour_meter",label:"Horímetro Inicial",type:"number",required:true,recalc:"woExec"},
+      {col:"final_hour_meter",label:"Horímetro Final",type:"number",required:true,recalc:"woExec"},
+      {col:"fuel_equipment_id",label:"Equipamento de Combustível",type:"link",table:"equipment",showField:"equipment_name",onchange:"onFuelEquipmentChange",required:true,section:"3. Medição de Combustível"},
+      {col:"tank_capacity_display",label:"Capacidade do Tanque (L) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"fuel_before_pct",label:"Combustível Antes do Trabalho (%)",type:"range",recalc:"woExec",required:true},
+      {col:"fuel_before_work",label:"Combustível Antes do Trabalho (L) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"refueling_l",label:"Abastecimento (L) — da Saída de Combustível",type:"number",readonly:true,previewOnly:true},
+      {col:"fuel_after_pct",label:"Combustível Após o Trabalho (%)",type:"range",recalc:"woExec",required:true},
+      {col:"fuel_after_work",label:"Combustível Após o Trabalho (L) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"fuel_consumed",label:"Combustível Consumido (L) — auto",type:"number",readonly:true,previewOnly:true,section:"4. Cálculo Automático"},
+      {col:"fuel_per_hour",label:"Combustível por Hora (L/h) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"worked_area_ha",label:"Área Trabalhada (ha)",type:"number",required:true,section:"5. Resultado do Trabalho"},
+      {col:"mileage_km",label:"Quilometragem (km)",type:"number"},
+      {col:"equipment_ids",label:"Equipamentos Utilizados (selecione um ou mais)",type:"multilink",table:"equipment",showField:"equipment_name",required:true},
+      {col:"observations",label:"Observações",type:"textarea"},
+    ]
+  },
+
+  maintenance_logs: {
+    label: "Registros de Manutenção", icon: "🛠️", cat: "Equipment", group: "Maintenance",
+    desc: "Histórico de reparos e serviços por máquina",
+    defaultSort: { column: "maintenance_date", ascending: false },
+    hasPartsUsed: true,
+    fields: [
+      {col:"equipment_id",label:"Equipamento",type:"link",table:"equipment",showField:"equipment_name",required:true,section:"1. Equipamento"},
+      {col:"maintenance_date",label:"Data da Manutenção",type:"date",required:true,onchange:"recalcDowntime",section:"2. Informações da Manutenção"},
+      {col:"maintenance_type",label:"Tipo",type:"lookup",lookupCategory:"maintenance_type",required:true},
+      {col:"status",label:"Status",type:"lookup",lookupCategory:"maintenance_status",required:true},
+      {col:"completion_date",label:"Data de Conclusão",type:"date",onchange:"recalcDowntime"},
+      {col:"reading_type",label:"Tipo de Leitura",type:"lookup",lookupCategory:"reading_type",required:true,section:"3. Leitura do Medidor"},
+      {col:"meter_reading_at_service",label:"Leitura do Medidor no Serviço (h ou km)",type:"number",required:true},
+      {col:"problem_description",label:"Descrição do Problema",type:"textarea",required:true,section:"4. Problema e Ação"},
+      {col:"action_taken",label:"Ação Tomada",type:"textarea",required:true},
+      {col:"parts_replaced",label:"Peças Substituídas (notas)",type:"textarea"},
+      {col:"staff_id",label:"Mecânico / Oficina",type:"link",table:"staff",showField:"staff_name",required:true,section:"6. Custo e Parada"},
+      {col:"labor_cost",label:"Custo de Mão de Obra",type:"number",required:true,allowZero:true},
+      {col:"cost",label:"Custo Total (auto = mão de obra + peças)",type:"number",readonly:true,previewOnly:true},
+      {col:"downtime_hours",label:"Tempo de Parada (horas) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"notes",label:"Observações",type:"textarea"},
+    ]
+  },
+  equipment_report: { label:"Relatório de Equipamentos", icon:"📈", cat:"Dashboard", group:"Maintenance", desc:"Estatísticas de reparo por equipamento", isEquipmentReport:true },
+
+  parts_inventory: {
+    label: "Cadastro de Peças", icon: "🔩", cat: "Master", group: "Maintenance",
+    desc: "Cadastro de peças de reposição + estoque",
+    defaultSort: { column: "part_name", ascending: true },
+    fields: [
+      {col:"part_code",label:"Código da Peça",type:"text",required:true},
+      {col:"part_name",label:"Nome da Peça",type:"text",required:true},
+      {col:"category",label:"Categoria",type:"lookup",lookupCategory:"part_category",required:true},
+      {col:"unit",label:"Unidade",type:"lookup",lookupCategory:"unit",required:true},
+      {col:"brand",label:"Marca",type:"text"},
+      {col:"model",label:"Modelo",type:"text"},
+      {col:"specification",label:"Especificação",type:"text"},
+      {col:"abc_class",label:"Classe ABC",type:"select",opts:ABC_CLASSES,required:true,section:"2. Classificação"},
+      {col:"warehouse_zone",label:"Zona do Armazém",type:"lookup",lookupCategory:"warehouse_zone",section:"3. Localização"},
+      {col:"bin_location",label:"Localização na Prateleira (ex. 03-02)",type:"text"},
+      {col:"minimum_stock",label:"Estoque Mínimo",type:"number",required:true,allowZero:true,section:"4. Estoque"},
+      {col:"standard_cost",label:"Custo Padrão",type:"number",allowZero:true},
+      {col:"supplier_id",label:"Fornecedor Padrão",type:"link",table:"suppliers",showField:"supplier_name"},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name"},
+      {col:"opening_stock",label:"Estoque Inicial",type:"number",required:true,allowZero:true,section:"5. Inicial"},
+      {col:"opening_unit_price",label:"Preço Unitário Inicial",type:"number",allowZero:true},
+    ]
+  },
+  parts_intake: {
+    label: "Entrada de Peças", icon: "📥", cat: "Maintenance", group: "Maintenance",
+    desc: "Registrar compras de peças",
+    defaultSort: { column: "intake_date", ascending: false },
+    fields: [
+      {col:"part_id",label:"Peça",type:"link",table:"parts_inventory",showField:"part_name",onchange:"autoFillPartsIntakePreview",required:true,section:"1. Peça"},
+      {col:"unit_display",label:"Unidade (auto da peça)",type:"linkedreadonly"},
+      {col:"current_avg_preview",label:"Preço Médio Atual (auto)",type:"number",readonly:true,previewOnly:true},
+      {col:"intake_quantity",label:"Quantidade de Entrada",type:"number",required:true,recalc:"partsIntake"},
+      {col:"unit_price",label:"Preço Unitário",type:"number",required:true,allowZero:true,recalc:"partsIntake"},
+      {col:"new_avg_preview",label:"Novo Preço Médio Ponderado (prévia) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"deviation_preview",label:"Desvio vs Preço Médio Antigo (%) — auto",type:"number",readonly:true,previewOnly:true},
+      {col:"total_value",label:"Valor Total (auto = qtd × preço)",type:"number",readonly:true,previewOnly:true},
+      {col:"warehouse_zone",label:"Zona do Armazém",type:"lookup",lookupCategory:"warehouse_zone",section:"2. Localização"},
+      {col:"bin_location",label:"Localização na Prateleira (ex. 03-02)",type:"text"},
+      {col:"supplier_id",label:"Fornecedor",type:"link",table:"suppliers",showField:"supplier_name",required:true,section:"3. Origem"},
+      {col:"invoice_id",label:"Nota Vinculada",type:"link",table:"invoices",showField:"invoice_no"},
+      {col:"invoice_no",label:"Nº da Nota (manual)",type:"text"},
+      {col:"batch_no",label:"Nº do Lote",type:"text"},
+      {col:"intake_date",label:"Data de Entrada",type:"date",required:true,section:"4. Detalhes"},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name",required:true},
+      {col:"price_deviation_pct",label:"Desvio Aprovado % (auditoria)",type:"number",readonly:true,previewOnly:true,section:"5. Auditoria de Aprovação"},
+      {col:"approved_by",label:"Aprovado Por",type:"number",readonly:true,previewOnly:true},
+      {col:"approved_at",label:"Aprovado Em",type:"datetime",readonly:true,previewOnly:true},
+      {col:"approval_note",label:"Nota de Aprovação",type:"textarea",readonly:true,previewOnly:true},
+    ]
+  },
+  parts_output: {
+    label: "Saída de Peças", icon: "📤", cat: "Maintenance", group: "Maintenance",
+    desc: "Registrar saída de peças para manutenção / ordem de serviço",
+    defaultSort: { column: "output_date", ascending: false },
+    autoNumber: { field: "exit_number", prefix: "SP-", digits: 3 },
+    fields: [
+      {col:"exit_number",label:"Número de Saída (auto)",type:"text",readonly:true,previewOnly:true,section:"1. Informações de Saída"},
+      {col:"part_id",label:"Peça",type:"link",table:"parts_inventory",showField:"part_name",onchange:"autoFillPartsOutput",required:true,section:"2. Peça e Destino"},
+      {col:"unit_display",label:"Unidade (auto da peça)",type:"linkedreadonly"},
+      {col:"location_display",label:"Localização (do Cadastro de Peças)",type:"linkedreadonly"},
+      {col:"maintenance_log_id",label:"Registro de Manutenção (opcional)",type:"link",table:"maintenance_logs",showField:"id"},
+      {col:"work_order_id",label:"Ordem de Serviço (opcional)",type:"link",table:"work_orders",showField:"task_number"},
+      {col:"system_unit_price",label:"Preço Unitário do Sistema (auto, bloqueado)",type:"number",readonly:true,previewOnly:true,section:"3. Detalhes da Saída"},
+      {col:"output_type",label:"Tipo de Saída",type:"lookup",lookupCategory:"output_type",required:true},
+      {col:"output_date",label:"Data de Saída",type:"date",required:true},
+      {col:"actual_output_quantity",label:"Quantidade",type:"number",required:true,recalc:"partsOutputCost"},
+      {col:"unit_price",label:"Preço Unitário (bloqueado, = média do sistema)",type:"number",readonly:true,previewOnly:true},
+      {col:"total_value",label:"Valor Total (auto)",type:"number",readonly:true,previewOnly:true},
+      {col:"discrepancy_reason",label:"Motivo de Divergência / Perda",type:"textarea",section:"4. Observações"},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name",required:true},
+    ]
+  },
+  parts_movements: {
+    label: "Movimentações de Peças", icon: "🔄", cat: "Maintenance", group: "Maintenance",
+    desc: "Devoluções / contagens / ajustes de peças",
+    defaultSort: { column: "movement_date", ascending: false },
+    fields: [
+      {col:"part_id",label:"Peça",type:"link",table:"parts_inventory",showField:"part_name",onchange:"autoFillPartsOutput",required:true,section:"1. Peça"},
+      {col:"unit_display",label:"Unidade (auto da peça)",type:"linkedreadonly"},
+      {col:"warehouse_zone",label:"Zona do Armazém",type:"lookup",lookupCategory:"warehouse_zone",section:"2. Localização"},
+      {col:"bin_location",label:"Localização na Prateleira (ex. 03-02)",type:"text"},
+      {col:"movement_type",label:"Tipo de Movimentação",type:"lookup",lookupCategory:"movement_type",required:true,section:"3. Movimentação"},
+      {col:"quantity",label:"Quantidade (+ adiciona, − subtrai)",type:"number",required:true,allowZero:true},
+      {col:"movement_date",label:"Data da Movimentação",type:"date",required:true,section:"4. Detalhes"},
+      {col:"reason",label:"Motivo",type:"textarea",required:true},
+      {col:"staff_id",label:"Responsável",type:"link",table:"staff",showField:"staff_name",required:true},
+    ]
+  },
+  parts_inventory_view: { label:"Estoque de Peças", icon:"📊", cat:"Dashboard", group:"Maintenance", desc:"Estoque de peças por classe ABC", isPartsInventoryDashboard:true },
+
+  user_management: { label:"Gerenciamento de Usuários", icon:"👤", cat:"Admin", group:"System", desc:"Gerenciar contas de usuários", isAdmin:true },
+};
+// ============================================================
+// STATE
+// ============================================================
+let sb = null;
+let currentUser = null;
+let currentTable = null;
+let linkCache = {};
+let lookupCache = {};
+let tomSelectInstances = [];
+
+// ============================================================
+// 日期格式转换
+// ============================================================
+function isoToDDMMYYYY(iso) {
+  if (!iso) return '';
+  const s = String(iso).substring(0,10);
+  const parts = s.split('-');
+  if (parts.length !== 3) return s;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+
+function ddmmyyyyToISO(ddmmyyyy) {
+  if (!ddmmyyyy) return null;
+  const parts = String(ddmmyyyy).split('/');
+  if (parts.length !== 3) return null;
+  const dd = parts[0].padStart(2,'0');
+  const mm = parts[1].padStart(2,'0');
+  const yyyy = parts[2];
+  if (yyyy.length !== 4) return null;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+function parseAnyDate(str) {
+  if (!str) return null;
+  str = String(str).trim();
+  if (!str) return null;
+  let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) {
+    const dd = parseInt(m[1]), mm = parseInt(m[2]), yyyy = m[3];
+    if (dd > 12) return `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+    if (mm > 12) return `${yyyy}-${String(dd).padStart(2,'0')}-${String(mm).padStart(2,'0')}`;
+    return `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+  }
+  m = str.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  const d = new Date(str);
+  if (!isNaN(d.getTime())) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return null;
+}
+
+function todayDDMMYYYY() {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+function nowHHMM() {
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${hh}:${mm}`;
+}
+
+function splitDatetime(iso) {
+  if (!iso) return { date: '', time: '' };
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return { date: '', time: '' };
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mi = String(d.getMinutes()).padStart(2,'0');
+  return { date: `${dd}/${mm}/${yyyy}`, time: `${hh}:${mi}` };
+}
+
+function mergeDatetime(dateStr, timeStr) {
+  if (!dateStr) return null;
+  const parts = String(dateStr).split('/');
+  if (parts.length !== 3) return null;
+  const [dd, mm, yyyy] = parts;
+  const [hh, mi] = (timeStr || '00:00').split(':');
+  const d = new Date(`${yyyy}-${mm}-${dd}T${hh.padStart(2,'0')}:${(mi||'00').padStart(2,'0')}:00`);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
+// ============================================================
+// 权限判断
+// ============================================================
+function canView(key) {
+  if (!currentUser) return false;
+  if (currentUser.role === 'admin') return true;
+  if (!currentUser.allowed_tables) return false;
+  return currentUser.allowed_tables.includes(key);
+}
+
+function canEdit(key) {
+  if (!currentUser) return false;
+  if (currentUser.role === 'admin') return true;
+  if (!currentUser.editable_tables) return false;
+  return currentUser.editable_tables.includes(key);
+}
+
+function hasAccess(key) { return canView(key); }
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  const url = EMBEDDED_URL || localStorage.getItem('sb_url');
+  const key = EMBEDDED_KEY || localStorage.getItem('sb_key');
+  if (url && key) {
+    sb = supabase.createClient(url, key);
+    showLogin();
+  } else {
+    document.getElementById('configScreen').style.display = 'flex';
+  }
+}
+
+function saveConfig() {
+  const url = document.getElementById('sbUrl').value.trim();
+  const key = document.getElementById('sbKey').value.trim();
+  if (!url || !key) { toast('Por favor, preencha os dois campos'); return; }
+  localStorage.setItem('sb_url', url);
+  localStorage.setItem('sb_key', key);
+  sb = supabase.createClient(url, key);
+  document.getElementById('configScreen').style.display = 'none';
+  showLogin();
+}
+
+function showLogin() {
+  document.getElementById('configScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  const params = new URLSearchParams(window.location.search);
+  const preUser = params.get('u');
+  document.getElementById('loginUser').value = preUser || '';
+  document.getElementById('loginPass').value = '';
+  const baseUrl = window.location.href.split('?')[0];
+  const qrDiv = document.getElementById('loginQR');
+  if (qrDiv) {
+    qrDiv.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=2&data=${encodeURIComponent(baseUrl)}" style="width:160px;height:160px;border-radius:8px" alt="QR Code" onerror="this.style.display='none'">`;
+  }
+}
+
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (!u || !p) { toast('Digite usuário e senha'); return; }
+  const hash = await sha256(p);
+  const { data, error } = await sb.from('app_users')
+    .select('*').eq('username', u).eq('password_hash', hash).single();
+  if (error || !data) { toast('Credenciais inválidas'); return; }
+  currentUser = data;
+  localStorage.setItem('session', JSON.stringify({
+    id: data.id, username: data.username, role: data.role,
+    displayName: data.display_name, allowed_tables: data.allowed_tables,
+    editable_tables: data.editable_tables
+  }));
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('userName').textContent = data.display_name || data.username;
+  showDashboard();
+}
+
+function logout() {
+  localStorage.removeItem('session');
+  currentUser = null;
+  document.getElementById('mainApp').style.display = 'none';
+  showLogin();
+}
+
+function showChangePassword() {
+  const old = document.getElementById('pwdModal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'pwdModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px';
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%">
+      <h3 style="color:#1a5632;margin-bottom:16px">🔑 Alterar Senha</h3>
+      <div class="form-group"><label>Senha Antiga</label><input id="pwd_old" type="password" placeholder="Digite a senha atual"></div>
+      <div class="form-group"><label>Nova Senha</label><input id="pwd_new" type="password" placeholder="Pelo menos 6 caracteres"></div>
+      <div class="form-group"><label>Confirmar Nova Senha</label><input id="pwd_confirm" type="password" placeholder="Repita a nova senha"></div>
+      <div id="pwd_err" style="color:#d32f2f;font-size:12px;margin-bottom:8px;display:none"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('pwdModal').remove()">Cancelar</button>
+        <button class="btn btn-primary" style="flex:1" onclick="changePassword()">Alterar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function changePassword() {
+  const oldPwd = document.getElementById('pwd_old').value;
+  const newPwd = document.getElementById('pwd_new').value;
+  const confirmPwd = document.getElementById('pwd_confirm').value;
+  const errEl = document.getElementById('pwd_err');
+  errEl.style.display = 'none';
+  if (!oldPwd || !newPwd || !confirmPwd) { errEl.textContent = 'Por favor, preencha todos os campos'; errEl.style.display = 'block'; return; }
+  if (newPwd.length < 6) { errEl.textContent = 'A nova senha deve ter pelo menos 6 caracteres'; errEl.style.display = 'block'; return; }
+  if (newPwd !== confirmPwd) { errEl.textContent = 'A nova senha e a confirmação não coincidem'; errEl.style.display = 'block'; return; }
+  if (newPwd === oldPwd) { errEl.textContent = 'A nova senha deve ser diferente da senha antiga'; errEl.style.display = 'block'; return; }
+  const oldHash = await sha256(oldPwd);
+  const { data: user, error: queryErr } = await sb.from('app_users')
+    .select('id').eq('id', currentUser.id).eq('password_hash', oldHash).single();
+  if (queryErr || !user) { errEl.textContent = 'Senha antiga incorreta'; errEl.style.display = 'block'; return; }
+  const newHash = await sha256(newPwd);
+  const { error } = await sb.from('app_users').update({ password_hash: newHash }).eq('id', currentUser.id);
+  if (error) { errEl.textContent = 'Erro: ' + error.message; errEl.style.display = 'block'; return; }
+  document.getElementById('pwdModal').remove();
+  toast('Senha alterada. Por favor, faça login novamente.', 5000);
+  setTimeout(() => { logout(); }, 2000);
+}
+
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function toast(msg, ms=3000) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), ms);
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function showDashboard() {
+  document.getElementById('headerTitle').textContent = '🌾 SONHOS VERDE';
+  const content = document.getElementById('content');
+  let html = '';
+  for (const group of GROUPS) {
+    const groupTables = Object.entries(TABLES).filter(([k, v]) => v.group === group.key && canView(k));
+    if (groupTables.length === 0) continue;
+    html += `<div class="group-header">
+      <span class="group-icon">${group.icon}</span>
+      <div>
+        <div class="group-title">${group.label}</div>
+        <div class="group-desc">${group.desc}</div>
+      </div>
+    </div>`;
+    html += `<div class="dashboard">`;
+    for (const [k, v] of groupTables) {
+      html += `<div class="dash-card" onclick="openModule('${k}')">
+        <div class="icon">${v.icon}</div>
+        <div class="title">${v.label}</div>
+        <div class="desc">${v.desc}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  content.innerHTML = html;
+}
+
+// ============================================================
+// MODULE VIEW
+// ============================================================
+async function openModule(key) {
+  if (!canView(key)) { toast('Sem permissão para acessar este módulo'); showDashboard(); return; }
+  currentTable = key;
+  const cfg = TABLES[key];
+  document.getElementById('headerTitle').textContent = `${cfg.icon} ${cfg.label}`;
+  if (cfg.isInventoryDashboard) {
+    await showInventoryDashboard(key);
+  } else if (cfg.isPartsInventoryDashboard) {
+    await showPartsInventoryDashboard(key);
+  } else if (cfg.isEquipmentReport) {
+    await showEquipmentReport();
+  } else if (cfg.isAdmin) {
+    await showUserManagement();
+  } else {
+    await showList(key);
+  }
+}
+
+function goBack() { showDashboard(); }
+
+// ============================================================
+// LIST VIEW
+// ============================================================
+async function showList(key) {
+  const cfg = TABLES[key];
+  const content = document.getElementById('content');
+  for (const f of cfg.fields) {
+    if (f.type === 'link' || f.type === 'multilink') await loadLinkCacheForField(f);
+    if (f.type === 'lookup') await loadLookupCache(f.lookupCategory);
+  }
+  let query = sb.from(key).select('*');
+  if (cfg.defaultSort) {
+    query = query.order(cfg.defaultSort.column, { ascending: cfg.defaultSort.ascending });
+    if (cfg.defaultSort.secondaryColumn) query = query.order(cfg.defaultSort.secondaryColumn, { ascending: cfg.defaultSort.secondaryAscending });
+  } else {
+    query = query.order('created_at', { ascending: false });
+  }
+  const { data, error } = await query;
+  if (error) { toast('Erro ao carregar dados: ' + error.message); return; }
+  const editable = canEdit(key);
+  let html = `<div class="section-header">
+    <button class="back-btn" onclick="goBack()">← Voltar</button>
+    <h3>${cfg.label}</h3>
+    ${editable ? `<button class="btn btn-outline btn-sm" onclick="downloadCSVTemplate('${key}')">📄 Modelo</button>` : ''}
+    ${editable ? `<button class="btn btn-outline btn-sm" onclick="importCSV('${key}')">📤 Importar CSV</button>` : ''}
+    <button class="btn btn-outline btn-sm" onclick="exportCSV('${key}')">📥 Exportar</button>
+    ${editable ? `<button class="btn btn-primary btn-sm" onclick="showForm('${key}')">+ Adicionar</button>` : ''}
+  </div>`;
+  if (!data || data.length === 0) {
+    html += `<div class="empty">Nenhum registro ainda.${editable ? ' Toque em "+ Adicionar" para criar um.' : ''}</div>`;
+  } else {
+    html += `<div class="list-container">`;
+    for (const row of data) {
+      const primaryField = cfg.fields[0];
+      let primaryVal = row[primaryField.col];
+      if (primaryField.type === 'link') {
+        primaryVal = linkCache[`${primaryField.table}_${row[primaryField.col]}`]?.[primaryField.showField] || row[primaryField.col];
+      }
+      const secondaryField = cfg.fields[1];
+      let secondaryVal = '';
+      if (secondaryField) {
+        const sv = row[secondaryField.col];
+        if (sv !== null && sv !== undefined && sv !== '') {
+          if (secondaryField.type === 'link') secondaryVal = linkCache[`${secondaryField.table}_${sv}`]?.[secondaryField.showField] || sv;
+          else if (secondaryField.type === 'multilink') secondaryVal = Array.isArray(sv) ? sv.map(id => linkCache[`${secondaryField.table}_${id}`]?.[secondaryField.showField] || id).join(', ') : sv;
+          else if (secondaryField.type === 'multiselect' && Array.isArray(sv)) secondaryVal = sv.join(', ');
+          else if (secondaryField.type === 'datetime') secondaryVal = new Date(sv).toLocaleString();
+          else if (secondaryField.type === 'date') secondaryVal = isoToDDMMYYYY(sv);
+          else secondaryVal = String(sv);
+        }
+      }
+      const voided = row.voided ? ' voided' : '';
+      const voidMark = row.voided ? ' <span style="color:#c62828;font-size:11px">[CANCELADO]</span>' : '';
+      html += `<div class="list-item${voided}">
+        <div class="info">
+          <div class="main">${primaryVal || '#' + row.id}${voidMark}</div>
+          <div class="sub">${secondaryVal}</div>
+        </div>
+        ${editable ? `<div class="actions">
+          ${!row.voided ? `<button onclick="showForm('${key}', ${row.id})" title="Editar">✏️</button>` : ''}
+          <button onclick="deleteRecord('${key}', ${row.id})" title="${row.voided ? 'Já cancelado' : 'Cancelar'}">🗑️</button>
+        </div>` : ''}
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  content.innerHTML = html;
+  if (editable) {
+    const fab = document.createElement('button');
+    fab.className = 'fab';
+    fab.textContent = '+';
+    fab.onclick = () => showForm(key);
+    content.appendChild(fab);
+  }
+}
+
+// ============================================================
+// SAVE / DELETE
+// ============================================================
+// ============================================================
+// 库存影响撤销（编辑时用）
+// ============================================================
+async function revertInventoryEffect(key, oldRecord) {
+  if (!oldRecord) return;
+
+  try {
+    if (key === 'fuel_intake') {
+      const item = await getFuelItem(oldRecord.fuel_type, oldRecord.tank_location);
+      if (item) {
+        const oldStock = Number(item.current_stock) || 0;
+        const oldAvg = Number(item.avg_unit_price) || 0;
+        const qty = Number(oldRecord.intake_quantity) || 0;
+        const newStock = oldStock - qty;
+        // 加权平均无法完美撤销，这里按数量比例回退（近似）
+        const newAvg = newStock > 0
+          ? Math.max(0, (oldStock * oldAvg - qty * Number(oldRecord.unit_price)) / newStock)
+          : 0;
+        await sb.from('fuel_inventory')
+          .update({ current_stock: newStock, avg_unit_price: Number(newAvg.toFixed(4)) })
+          .eq('id', item.id);
+      }
+    } else if (key === 'fuel_output') {
+      const item = await getFuelItem(oldRecord.fuel_type, oldRecord.tank_location);
+      if (item) {
+        const newStock = (Number(item.current_stock) || 0) + (Number(oldRecord.liters_added) || 0);
+        await sb.from('fuel_inventory').update({ current_stock: newStock }).eq('id', item.id);
+      }
+    } else if (key === 'inputs_intake') {
+      const { data: item } = await sb.from('inputs_inventory')
+        .select('current_stock, avg_unit_price').eq('id', oldRecord.input_id).single();
+      if (item) {
+        const oldStock = Number(item.current_stock) || 0;
+        const oldAvg = Number(item.avg_unit_price) || 0;
+        const qty = Number(oldRecord.intake_quantity) || 0;
+        const newStock = oldStock - qty;
+        const newAvg = newStock > 0
+          ? Math.max(0, (oldStock * oldAvg - qty * Number(oldRecord.unit_price)) / newStock)
+          : 0;
+        await sb.from('inputs_inventory')
+          .update({ current_stock: newStock, avg_unit_price: Number(newAvg.toFixed(4)) })
+          .eq('id', oldRecord.input_id);
+      }
+    } else if (key === 'inputs_output') {
+      const { data: item } = await sb.from('inputs_inventory')
+        .select('current_stock').eq('id', oldRecord.input_id).single();
+      if (item) {
+        const newStock = (Number(item.current_stock) || 0) + (Number(oldRecord.actual_output_quantity) || 0);
+        await sb.from('inputs_inventory').update({ current_stock: newStock }).eq('id', oldRecord.input_id);
+      }
+    } else if (key === 'inventory_movements') {
+      const { data: item } = await sb.from('inputs_inventory')
+        .select('current_stock').eq('id', oldRecord.input_id).single();
+      if (item) {
+        const newStock = (Number(item.current_stock) || 0) - (Number(oldRecord.quantity) || 0);
+        await sb.from('inputs_inventory').update({ current_stock: newStock }).eq('id', oldRecord.input_id);
+      }
+    } else if (key === 'parts_intake') {
+      const { data: item } = await sb.from('parts_inventory')
+        .select('current_stock, avg_unit_price').eq('id', oldRecord.part_id).single();
+      if (item) {
+        const oldStock = Number(item.current_stock) || 0;
+        const oldAvg = Number(item.avg_unit_price) || 0;
+        const qty = Number(oldRecord.intake_quantity) || 0;
+        const newStock = oldStock - qty;
+        const newAvg = newStock > 0
+          ? Math.max(0, (oldStock * oldAvg - qty * Number(oldRecord.unit_price)) / newStock)
+          : 0;
+        await sb.from('parts_inventory')
+          .update({ current_stock: newStock, avg_unit_price: Number(newAvg.toFixed(4)) })
+          .eq('id', oldRecord.part_id);
+      }
+    } else if (key === 'parts_output') {
+      const { data: item } = await sb.from('parts_inventory')
+        .select('current_stock').eq('id', oldRecord.part_id).single();
+      if (item) {
+        const newStock = (Number(item.current_stock) || 0) + (Number(oldRecord.actual_output_quantity) || 0);
+        await sb.from('parts_inventory').update({ current_stock: newStock }).eq('id', oldRecord.part_id);
+      }
+    } else if (key === 'parts_movements') {
+      const { data: item } = await sb.from('parts_inventory')
+        .select('current_stock').eq('id', oldRecord.part_id).single();
+      if (item) {
+        const newStock = (Number(item.current_stock) || 0) - (Number(oldRecord.quantity) || 0);
+        await sb.from('parts_inventory').update({ current_stock: newStock }).eq('id', oldRecord.part_id);
+      }
+    }
+  } catch (e) {
+    console.warn('revertInventoryEffect failed:', e);
+  }
+}
+
+// ============================================================
+// 库存应用（保存时用）
+// ============================================================
+async function applyInventoryEffect(key, record) {
+  if (key === 'fuel_intake') {
+    const item = await getFuelItem(record.fuel_type, record.tank_location);
+    if (item) {
+      const oldStock = Number(item.current_stock) || 0;
+      const oldAvg = Number(item.avg_unit_price) || 0;
+      const qty = Number(record.intake_quantity) || 0;
+      const price = Number(record.unit_price) || 0;
+      const newStock = oldStock + qty;
+      const newAvg = newStock > 0 ? ((oldStock * oldAvg) + (qty * price)) / newStock : 0;
+      await sb.from('fuel_inventory')
+        .update({ current_stock: newStock, avg_unit_price: Number(newAvg.toFixed(4)) })
+        .eq('id', item.id);
+    }
+  } else if (key === 'fuel_output') {
+    const item = await getFuelItem(record.fuel_type, record.tank_location);
+    if (item) {
+      const newStock = (Number(item.current_stock) || 0) - (Number(record.liters_added) || 0);
+      await sb.from('fuel_inventory').update({ current_stock: newStock }).eq('id', item.id);
+    }
+  } else if (key === 'inputs_intake') {
+    const { data: item } = await sb.from('inputs_inventory')
+      .select('current_stock, avg_unit_price').eq('id', record.input_id).single();
+    if (item) {
+      const oldStock = Number(item.current_stock) || 0;
+      const oldAvg = Number(item.avg_unit_price) || 0;
+      const qty = Number(record.intake_quantity) || 0;
+      const price = Number(record.unit_price) || 0;
+      const newStock = oldStock + qty;
+      const newAvg = newStock > 0 ? ((oldStock * oldAvg) + (qty * price)) / newStock : 0;
+      await sb.from('inputs_inventory')
+        .update({ current_stock: newStock, avg_unit_price: Number(newAvg.toFixed(4)) })
+        .eq('id', record.input_id);
+    }
+  } else if (key === 'inputs_output') {
+    const { data: item } = await sb.from('inputs_inventory')
+      .select('current_stock').eq('id', record.input_id).single();
+    if (item) {
+      const newStock = (Number(item.current_stock) || 0) - (Number(record.actual_output_quantity) || 0);
+      await sb.from('inputs_inventory').update({ current_stock: newStock }).eq('id', record.input_id);
+    }
+  } else if (key === 'inventory_movements') {
+    const { data: item } = await sb.from('inputs_inventory')
+      .select('current_stock').eq('id', record.input_id).single();
+    if (item) {
+      const newStock = (Number(item.current_stock) || 0) + (Number(record.quantity) || 0);
+      await sb.from('inputs_inventory').update({ current_stock: newStock }).eq('id', record.input_id);
+    }
+  } else if (key === 'parts_intake') {
+    const { data: item } = await sb.from('parts_inventory')
+      .select('current_stock, avg_unit_price').eq('id', record.part_id).single();
+    if (item) {
+      const oldStock = Number(item.current_stock) || 0;
+      const oldAvg = Number(item.avg_unit_price) || 0;
+      const qty = Number(record.intake_quantity) || 0;
+      const price = Number(record.unit_price) || 0;
+      const newStock = oldStock + qty;
+      const newAvg = newStock > 0 ? ((oldStock * oldAvg) + (qty * price)) / newStock : 0;
+      await sb.from('parts_inventory')
+        .update({ current_stock: newStock, avg_unit_price: Number(newAvg.toFixed(4)) })
+        .eq('id', record.part_id);
+    }
+  } else if (key === 'parts_output') {
+    const { data: item } = await sb.from('parts_inventory')
+      .select('current_stock').eq('id', record.part_id).single();
+    if (item) {
+      const newStock = (Number(item.current_stock) || 0) - (Number(record.actual_output_quantity) || 0);
+      await sb.from('parts_inventory').update({ current_stock: newStock }).eq('id', record.part_id);
+    }
+  } else if (key === 'parts_movements') {
+    const { data: item } = await sb.from('parts_inventory')
+      .select('current_stock').eq('id', record.part_id).single();
+    if (item) {
+      const newStock = (Number(item.current_stock) || 0) + (Number(record.quantity) || 0);
+      await sb.from('parts_inventory').update({ current_stock: newStock }).eq('id', record.part_id);
+    }
+  } else if (key === 'maintenance_logs') {
+    // 维护日志用到的零件已在子表 maintenance_parts 里，库存由零件出库或维护记录处理
+    // 如果维护日志里有零件使用，这里可选择性地扣减库存（当前不处理，避免与 parts_output 重复）
+  }
+}
+
+// ============================================================
+// 审批检查（仅入库时）
+// ============================================================
+async function checkApprovalNeeded(key, record) {
+  if (key !== 'fuel_intake' && key !== 'inputs_intake' && key !== 'parts_intake') return { needed: false };
+
+  let oldAvg = 0;
+  let newAvg = 0;
+
+  if (key === 'fuel_intake') {
+    const item = await getFuelItem(record.fuel_type, record.tank_location);
+    oldAvg = Number(item?.avg_unit_price) || 0;
+    const oldStock = Number(item?.current_stock) || 0;
+    const qty = Number(record.intake_quantity) || 0;
+    const price = Number(record.unit_price) || 0;
+    const newStock = oldStock + qty;
+    newAvg = newStock > 0 ? ((oldStock * oldAvg) + (qty * price)) / newStock : 0;
+  } else if (key === 'inputs_intake') {
+    const { data: item } = await sb.from('inputs_inventory')
+      .select('current_stock, avg_unit_price').eq('id', record.input_id).single();
+    oldAvg = Number(item?.avg_unit_price) || 0;
+    const oldStock = Number(item?.current_stock) || 0;
+    const qty = Number(record.intake_quantity) || 0;
+    const price = Number(record.unit_price) || 0;
+    const newStock = oldStock + qty;
+    newAvg = newStock > 0 ? ((oldStock * oldAvg) + (qty * price)) / newStock : 0;
+  } else if (key === 'parts_intake') {
+    const { data: item } = await sb.from('parts_inventory')
+      .select('current_stock, avg_unit_price').eq('id', record.part_id).single();
+    oldAvg = Number(item?.avg_unit_price) || 0;
+    const oldStock = Number(item?.current_stock) || 0;
+    const qty = Number(record.intake_quantity) || 0;
+    const price = Number(record.unit_price) || 0;
+    const newStock = oldStock + qty;
+    newAvg = newStock > 0 ? ((oldStock * oldAvg) + (qty * price)) / newStock : 0;
+  }
+
+  const deviation = oldAvg > 0 ? ((newAvg - oldAvg) / oldAvg) * 100 : 0;
+  return {
+    needed: Math.abs(deviation) > PRICE_DEVIATION_THRESHOLD,
+    deviation,
+    oldAvg,
+    newAvg
+  };
+}
+
+// ============================================================
+// 库存不足检查（仅出库时）
+// ============================================================
+async function checkStockShortage(key, record) {
+  if (key !== 'fuel_output' && key !== 'inputs_output' && key !== 'parts_output') return { shortage: false };
+
+  let currentStock = 0;
+  let requiredQty = 0;
+  let itemName = '';
+
+  if (key === 'fuel_output') {
+    const item = await getFuelItem(record.fuel_type, record.tank_location);
+    currentStock = Number(item?.current_stock) || 0;
+    requiredQty = Number(record.liters_added) || 0;
+    itemName = `${record.fuel_type} (${record.tank_location})`;
+  } else if (key === 'inputs_output') {
+    const { data: item } = await sb.from('inputs_inventory')
+      .select('input_name, current_stock').eq('id', record.input_id).single();
+    currentStock = Number(item?.current_stock) || 0;
+    requiredQty = Number(record.actual_output_quantity) || 0;
+    itemName = item?.input_name || 'Insumo';
+  } else if (key === 'parts_output') {
+    const { data: item } = await sb.from('parts_inventory')
+      .select('part_name, current_stock').eq('id', record.part_id).single();
+    currentStock = Number(item?.current_stock) || 0;
+    requiredQty = Number(record.actual_output_quantity) || 0;
+    itemName = item?.part_name || 'Peça';
+  }
+
+  return {
+    shortage: currentStock - requiredQty < 0,
+    currentStock,
+    requiredQty,
+    itemName
+  };
+}
+
+// ============================================================
+// SAVE RECORD（主函数，包含审批+库存检查+库存更新）
+// ============================================================
+async function saveRecord(key, editId) {
+  const cfg = TABLES[key];
+  const record = {};
+  const errors = [];
+
+  // 1) 收集表单数据
+  for (const f of cfg.fields) {
+    if (f.previewOnly) continue;
+    const id = 'fld_' + f.col;
+    let val;
+
+    if (f.type === 'multilink' || f.type === 'multiselect') {
+      const container = document.getElementById(id);
+      if (!container) continue;
+      val = Array.from(container.querySelectorAll('input:checked')).map(c => f.type === 'multilink' ? parseInt(c.value) : c.value);
+    } else if (f.type === 'datetime') {
+      const dateEl = document.getElementById(id + '__date');
+      const timeEl = document.getElementById(id + '__time');
+      val = (dateEl && dateEl.value) ? mergeDatetime(dateEl.value, timeEl ? timeEl.value : '00:00') : null;
+    } else if (f.type === 'range') {
+      const el = document.getElementById(id);
+      val = el ? parseFloat(el.value) : null;
+    } else {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      val = el.value;
+      if (f.type === 'number') val = val === '' ? null : parseFloat(val);
+      else if (f.type === 'link') val = val === '' ? null : parseInt(val);
+      else if (f.type === 'date') val = val ? ddmmyyyyToISO(val) : null;
+      else if (val === '') val = null;
+    }
+
+    if (f.required && (val === null || val === undefined || val === '' || (Array.isArray(val) && val.length === 0))) {
+      errors.push(f.label);
+    }
+    record[f.col] = val;
+  }
+
+  if (errors.length > 0) { toast('Campos obrigatórios: ' + errors.join(', '), 5000); return; }
+
+  record.created_by = currentUser.id;
+
+  // 2) 读取旧记录（编辑时用）
+  let oldRecord = null;
+  if (editId) {
+    const { data } = await sb.from(key).select('*').eq('id', editId).single();
+    oldRecord = data;
+  }
+
+  // 3) 审批检查（入库时）
+  const approval = await checkApprovalNeeded(key, record);
+  if (approval.needed) {
+    const result = await askAdminApproval(approval.deviation, approval.oldAvg, approval.newAvg);
+    if (!result.approved) { toast('Operação cancelada pelo usuário'); return; }
+    record.price_deviation_pct = Number(approval.deviation.toFixed(2));
+    record.approved_by = result.adminId;
+    record.approved_at = new Date().toISOString();
+    record.approval_note = result.note || null;
+  }
+
+  // 4) 库存不足检查（出库时）
+  const shortage = await checkStockShortage(key, record);
+  if (shortage.shortage) {
+    const ok = await askStockShortage(shortage.currentStock, shortage.requiredQty, shortage.itemName);
+    if (!ok) { toast('Operação cancelada pelo usuário'); return; }
+  }
+
+  // 5) 撤销旧记录的库存影响（编辑时）
+  if (editId && oldRecord) {
+    await revertInventoryEffect(key, oldRecord);
+  }
+
+  // 6) 保存主记录
+  let recordId = editId;
+  if (editId) {
+    const { error } = await sb.from(key).update(record).eq('id', editId);
+    if (error) { toast('Erro: ' + error.message); return; }
+    toast('Registro atualizado');
+  } else {
+    const { data, error } = await sb.from(key).insert(record).select('id').single();
+    if (error) { toast('Erro: ' + error.message); return; }
+    recordId = data.id;
+    toast('Registro salvo');
+  }
+
+  // 7) 应用新的库存影响
+  await applyInventoryEffect(key, record);
+
+  // 8) 子表：inputs_per_work_order
+  if (cfg.hasPlannedInputs) {
+    await sb.from('inputs_per_work_order').delete().eq('work_order_id', recordId);
+    const rows = document.querySelectorAll('#plannedInputsRows .planned-row');
+    const planned = [];
+    rows.forEach(r => {
+      const inputId = r.querySelector('.planned-input-select')?.value;
+      const qty = parseFloat(r.querySelector('.planned-qty')?.value);
+      if (inputId && !isNaN(qty)) {
+        planned.push({
+          work_order_id: recordId,
+          input_id: parseInt(inputId),
+          quantity_used: qty,
+          unit: r.querySelector('.planned-unit')?.value || null
+        });
+      }
+    });
+    if (planned.length > 0) await sb.from('inputs_per_work_order').insert(planned);
+  }
+
+  // 9) 子表：maintenance_parts
+  if (cfg.hasPartsUsed) {
+    await sb.from('maintenance_parts').delete().eq('maintenance_log_id', recordId);
+    const rows = document.querySelectorAll('#partsUsedRows .planned-row');
+    const parts = [];
+    rows.forEach(r => {
+      const partId = r.querySelector('.planned-input-select')?.value;
+      const qty = parseFloat(r.querySelector('.planned-qty')?.value);
+      const price = parseFloat(r.querySelector('.planned-price')?.value) || 0;
+      if (partId && !isNaN(qty)) {
+        parts.push({
+          maintenance_log_id: recordId,
+          part_id: parseInt(partId),
+          quantity_used: qty,
+          unit: r.querySelector('.planned-unit')?.value || null,
+          system_unit_price: price,
+          total_value: qty * price
+        });
+      }
+    });
+    if (parts.length > 0) await sb.from('maintenance_parts').insert(parts);
+  }
+
+  openModule(key);
+}
+
+// ============================================================
+// CSV EXPORT / TEMPLATE / IMPORT
+// ============================================================
+async function exportCSV(key) {
+  const cfg = TABLES[key];
+  for (const f of cfg.fields) {
+    if (f.type === 'link' || f.type === 'multilink') await loadLinkCacheForField(f);
+  }
+  const { data, error } = await sb.from(key).select('*').order('created_at', {ascending: false});
+  if (error) { toast('Erro: ' + error.message); return; }
+  if (!data || data.length === 0) { toast('Nenhum dado para exportar'); return; }
+  const headers = ['ID', ...cfg.fields.map(f => f.label), 'Criado em'];
+  const rows = [headers];
+  for (const row of data) {
+    const values = [row.id];
+    for (const f of cfg.fields) {
+      let val = row[f.col];
+      if (val === null || val === undefined) val = '';
+      else if (f.type === 'link') val = linkCache[`${f.table}_${val}`]?.[f.showField] || val;
+      else if (f.type === 'multilink') val = Array.isArray(val) ? val.map(id => linkCache[`${f.table}_${id}`]?.[f.showField] || id).join('; ') : val;
+      else if (f.type === 'multiselect' && Array.isArray(val)) val = val.join('; ');
+      else if (f.type === 'datetime') val = new Date(val).toLocaleString();
+      else if (f.type === 'date') val = isoToDDMMYYYY(val);
+      values.push(String(val));
+    }
+    values.push(row.created_at ? new Date(row.created_at).toLocaleString() : '');
+    rows.push(values);
+  }
+  const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${key}_export_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(`Exportados ${data.length} registros`);
+}
+
+function downloadCSVTemplate(key) {
+  const cfg = TABLES[key];
+  const headers = cfg.fields.filter(f => !f.previewOnly && !f.readonly).map(f => f.label);
+  const csv = headers.join(',') + '\n';
+  const blob = new Blob(['\ufeff' + csv], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${key}_template.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Modelo baixado. Por favor, salve como UTF-8.');
+}
+
+function importCSV(key) {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.csv';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    await processCSVImport(key, text);
+  };
+  input.click();
+}
+
+function parseCSV(text) {
+  const rows = []; let row = []; let cell = ''; let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') { if (text[i+1] === '"') { cell += '"'; i++; } else inQuotes = false; }
+      else cell += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (cell !== '' || row.length > 0) { row.push(cell); rows.push(row); row = []; cell = ''; }
+        if (c === '\r' && text[i+1] === '\n') i++;
+      } else cell += c;
+    }
+  }
+  if (cell !== '' || row.length > 0) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.length > 1 || (r.length === 1 && r[0] !== ''));
+}
+
+async function processCSVImport(key, text) {
+  const cfg = TABLES[key];
+  const rows = parseCSV(text);
+  if (rows.length < 2) { toast('CSV deve ter cabeçalho e pelo menos uma linha'); return; }
+  const headers = rows[0].map(h => h.trim().toLowerCase());
+  const dataRows = rows.slice(1);
+  for (const f of cfg.fields) {
+    if (f.type === 'link') await loadLinkCache(f.table, f.showField);
+    if (f.type === 'lookup') await loadLookupCache(f.lookupCategory);
+  }
+  const successList = []; const failList = [];
+  for (let i = 0; i < dataRows.length; i++) {
+    const row = dataRows[i];
+    try {
+      const record = {};
+      for (const f of cfg.fields) {
+        if (f.previewOnly) continue;
+        const idx = headers.findIndex(h => h === f.label.toLowerCase());
+        if (idx === -1) continue;
+        let val = (row[idx] || '').trim();
+        if (val === '' && f.type !== 'date') continue;
+        if (f.type === 'number' || f.type === 'range') {
+          val = val === '' ? null : parseFloat(val);
+          if (val !== null && isNaN(val)) throw new Error(`Número inválido: ${f.label}`);
+        } else if (f.type === 'date') {
+          val = val ? parseAnyDate(val) : null;
+        } else if (f.type === 'datetime') {
+          val = val ? parseAnyDate(val.substring(0,10)) : null;
+          if (val) val = val + 'T00:00:00Z';
+        } else if (f.type === 'link') {
+          const items = Object.values(linkCache).filter(v => typeof v === 'object' && v.id && String(v[f.showField]).toLowerCase() === val.toLowerCase());
+          if (items.length === 0) throw new Error(`Não encontrado: ${f.label} = "${val}"`);
+          val = items[0].id;
+        }
+        record[f.col] = val;
+      }
+      for (const f of cfg.fields) {
+        if (f.previewOnly || !f.required) continue;
+        const v = record[f.col];
+        if (v === null || v === undefined || v === '') throw new Error(`Campo obrigatório: ${f.label}`);
+      }
+      successList.push(record);
+    } catch (e) { failList.push({ row: i + 2, error: e.message }); }
+  }
+  if (successList.length > 0) {
+    const { error } = await sb.from(key).insert(successList);
+    if (error) { toast('Falha: ' + error.message); return; }
+  }
+  let msg = `Importados ${successList.length}`;
+  if (failList.length > 0) msg += `, falharam ${failList.length}`;
+  toast(msg, 5000);
+  openModule(key);
+}
+
+// ============================================================
+// LINK CACHE
+// ============================================================
+async function loadLinkCache(tableName, showField, extraFields) {
+  const cacheKey = tableName + '_' + showField;
+  if (linkCache[cacheKey + '_loaded']) return;
+  const cols = ['id', showField, ...(extraFields || [])].join(',');
+  const { data } = await sb.from(tableName).select(cols);
+  if (data) {
+    for (const row of data) linkCache[`${tableName}_${row.id}`] = row;
+    linkCache[cacheKey + '_loaded'] = true;
+  }
+}
+
+async function loadLinkCacheForField(f) {
+  if (f.table === 'inputs_inventory' || f.table === 'parts_inventory') {
+    await loadLinkCache(f.table, f.showField, ['unit', 'avg_unit_price', 'current_stock', 'abc_class', 'warehouse_zone', 'bin_location']);
+  } else if (f.table === 'equipment') {
+    await loadLinkCache('equipment', f.showField, ['tank_capacity']);
+  } else {
+    await loadLinkCache(f.table, f.showField);
+  }
+}
+
+// ============================================================
+// LOOKUP CACHE
+// ============================================================
+function normalizeLookupKey(v) {
+  return String(v || '').toLowerCase().replace(/[\s\(\)（）]/g, '').replace(/(h|km|kg|l|t)$/i, '');
+}
+
+async function loadLookupCache(category) {
+  if (!category) return;
+  if (lookupCache[category + '_loaded']) return;
+  const { data } = await sb.from('lookup_values').select('*').eq('category', category).eq('active', 'true');
+  if (data) {
+    const seen = new Set(); const unique = [];
+    for (const item of data) {
+      if (!item.value) continue;
+      const key = normalizeLookupKey(item.value);
+      if (seen.has(key)) continue;
+      seen.add(key); unique.push(item);
+    }
+    lookupCache[category] = unique;
+    lookupCache[category + '_loaded'] = true;
+  }
+}
+
+function getLookupOptions(category) {
+  const items = lookupCache[category] || [];
+  return items.map(i => ({value: i.value, label: i.label || i.value}));
+}
+
+// ============================================================
+// 自动编号
+// ============================================================
+async function generateNextDocNumber(cfg, tableName) {
+  const today = new Date();
+  const datePart = `${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}`;
+  const prefix = `${cfg.prefix}${datePart}-`;
+  const { data } = await sb.from(tableName).select(cfg.field).like(cfg.field, prefix + '%').order(cfg.field, { ascending: false }).limit(1);
+  let nextSeq = 1;
+  if (data && data.length > 0 && data[0][cfg.field]) {
+    const parts = String(data[0][cfg.field]).split('-');
+    const lastSeq = parseInt(parts[parts.length - 1], 10);
+    if (!isNaN(lastSeq)) nextSeq = lastSeq + 1;
+  }
+  return prefix + String(nextSeq).padStart(cfg.digits, '0');
+}
+
+// ============================================================
+// 加权平均 / 库存更新
+// ============================================================
+async function previewNewAvgPrice(tableName, inputId, intakeQty, unitPrice) {
+  const { data: item } = await sb.from(tableName).select('current_stock, avg_unit_price').eq('id', inputId).single();
+  const oldStock = Number(item?.current_stock) || 0;
+  const oldAvg = Number(item?.avg_unit_price) || 0;
+  const newStock = oldStock + Number(intakeQty);
+  const newAvg = newStock > 0 ? ((oldStock * oldAvg) + (Number(intakeQty) * Number(unitPrice))) / newStock : 0;
+  const deviation = oldAvg > 0 ? ((newAvg - oldAvg) / oldAvg) * 100 : 0;
+  return { oldStock, oldAvg, newStock, newAvg, deviation };
+}
+
+async function getFuelItem(fuelType, tankLocation) {
+  const { data } = await sb.from('fuel_inventory').select('id, current_stock, avg_unit_price')
+    .eq('fuel_type', fuelType).eq('tank_location', tankLocation).single();
+  return data;
+}
+
+async function previewFuelNewAvg(fuelType, tankLocation, intakeQty, unitPrice) {
+  const item = await getFuelItem(fuelType, tankLocation);
+  const oldStock = Number(item?.current_stock) || 0;
+  const oldAvg = Number(item?.avg_unit_price) || 0;
+  const newStock = oldStock + Number(intakeQty);
+  const newAvg = newStock > 0 ? ((oldStock * oldAvg) + (Number(intakeQty) * Number(unitPrice))) / newStock : 0;
+  const deviation = oldAvg > 0 ? ((newAvg - oldAvg) / oldAvg) * 100 : 0;
+  return { oldStock, oldAvg, newStock, newAvg, deviation };
+}
+
+// ============================================================
+// FUEL INTAKE - AUTO FILL / RECALC
+// ============================================================
+async function autoFillFuelIntakePreview() {
+  const fuelType = document.getElementById('fld_fuel_type')?.value;
+  const tankLocation = document.getElementById('fld_tank_location')?.value;
+  const currentAvgEl = document.getElementById('fld_current_avg_preview');
+  if (!fuelType || !tankLocation) {
+    if (currentAvgEl) currentAvgEl.value = '';
+    return recalcFuelIntakePreview();
+  }
+  const item = await getFuelItem(fuelType, tankLocation);
+  if (currentAvgEl) currentAvgEl.value = item ? Number(item.avg_unit_price || 0).toFixed(4) : '0.0000';
+  recalcFuelIntakePreview();
+}
+
+async function recalcFuelIntakePreview() {
+  const fuelType = document.getElementById('fld_fuel_type')?.value;
+  const tankLocation = document.getElementById('fld_tank_location')?.value;
+  const qty = parseFloat(document.getElementById('fld_intake_quantity')?.value) || 0;
+  const price = parseFloat(document.getElementById('fld_unit_price')?.value) || 0;
+  const totalEl = document.getElementById('fld_total_value');
+  if (totalEl) totalEl.value = (qty * price).toFixed(2);
+  const newAvgEl = document.getElementById('fld_new_avg_preview');
+  const devEl = document.getElementById('fld_deviation_preview');
+  if (!fuelType || !tankLocation || qty <= 0) {
+    if (newAvgEl) newAvgEl.value = '';
+    if (devEl) devEl.value = '';
+    return;
+  }
+  const { newAvg, deviation } = await previewFuelNewAvg(fuelType, tankLocation, qty, price);
+  if (newAvgEl) newAvgEl.value = newAvg.toFixed(4);
+  if (devEl) devEl.value = deviation.toFixed(2);
+}
+
+// ============================================================
+// FUEL OUTPUT - AUTO FILL / RECALC
+// ============================================================
+async function autoFillPreviousReading() {
+  const eqId = document.getElementById('fld_equipment_id')?.value;
+  if (!eqId) return;
+  const { data } = await sb.from('fuel_output').select('*').eq('equipment_id', eqId).order('date_time', {ascending: false}).limit(1);
+  const prevReading = document.getElementById('fld_previous_reading');
+  const prevFuelAfter = document.getElementById('fld_prev_fuel_after');
+  if (data && data.length > 0) {
+    const last = data[0];
+    if (prevReading) prevReading.value = last.current_reading ?? '';
+    if (prevFuelAfter) prevFuelAfter.value = last.fuel_after ?? '';
+  } else {
+    if (prevReading) prevReading.value = '';
+    if (prevFuelAfter) prevFuelAfter.value = '';
+  }
+  recalcFuelOutput();
+}
+
+async function autoFillFuelOutputPrice() {
+  const fuelType = document.getElementById('fld_fuel_type')?.value;
+  const tankLocation = document.getElementById('fld_tank_location')?.value;
+  const sysPriceEl = document.getElementById('fld_system_unit_price');
+  const unitPriceEl = document.getElementById('fld_unit_price');
+  if (!fuelType || !tankLocation) {
+    if (sysPriceEl) sysPriceEl.value = '';
+    if (unitPriceEl) unitPriceEl.value = '';
+    recalcFuelOutput();
+    return;
+  }
+  const item = await getFuelItem(fuelType, tankLocation);
+  const avg = Number(item?.avg_unit_price) || 0;
+  if (sysPriceEl) sysPriceEl.value = avg.toFixed(4);
+  if (unitPriceEl) unitPriceEl.value = avg.toFixed(4);
+  recalcFuelOutput();
+}
+
+function recalcFuelOutput() {
+  const prevReading = parseFloat(document.getElementById('fld_previous_reading')?.value) || 0;
+  const currReading = parseFloat(document.getElementById('fld_current_reading')?.value) || 0;
+  const prevFuelAfter = parseFloat(document.getElementById('fld_prev_fuel_after')?.value) || 0;
+  const fuelBefore = parseFloat(document.getElementById('fld_fuel_before')?.value) || 0;
+  const fuelAfter = parseFloat(document.getElementById('fld_fuel_after')?.value) || 0;
+  const litersAdded = parseFloat(document.getElementById('fld_liters_added')?.value) || 0;
+  const unitPrice = parseFloat(document.getElementById('fld_unit_price')?.value) || 0;
+
+  let litersRefueled = 0;
+  let fuelUsed = 0;
+  if (fuelAfter >= fuelBefore && fuelAfter > 0) {
+    litersRefueled = Math.max(0, fuelAfter - fuelBefore);
+    fuelUsed = Math.max(0, prevFuelAfter + litersRefueled - fuelAfter);
+  } else if (litersAdded > 0) {
+    litersRefueled = litersAdded;
+    fuelUsed = Math.max(0, prevFuelAfter + litersRefueled - fuelAfter);
+  }
+
+  const deltaReading = currReading - prevReading;
+  const consumptionRate = deltaReading > 0 ? (fuelUsed / deltaReading) : 0;
+  const totalValue = litersAdded * unitPrice;
+
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v.toFixed(2); };
+  setVal('fld_liters_refueled', litersRefueled);
+  setVal('fld_fuel_used', fuelUsed);
+  setVal('fld_consumption_rate', consumptionRate);
+  setVal('fld_total_value', totalValue);
+}
+
+// ============================================================
+// INPUTS - AUTO FILL / RECALC
+// ============================================================
+async function autoFillIntakePreview() {
+  const inputId = document.getElementById('fld_input_id')?.value;
+  const avgEl = document.getElementById('fld_current_avg_preview');
+  const unitEl = document.getElementById('fld_unit_display');
+  if (!inputId) {
+    if (avgEl) avgEl.value = '';
+    if (unitEl) unitEl.value = '';
+    return recalcIntakePreview();
+  }
+  const item = linkCache[`inputs_inventory_${inputId}`];
+  if (item) {
+    if (avgEl) avgEl.value = Number(item.avg_unit_price || 0).toFixed(4);
+    if (unitEl) {
+      const unitVal = item.unit;
+      let unitLabel = unitVal || '';
+      const found = getLookupOptions('unit').find(o => o.value === unitVal);
+      if (found) unitLabel = found.label;
+      unitEl.value = unitLabel;
+    }
+  }
+  recalcIntakePreview();
+}
+
+async function recalcIntakePreview() {
+  const inputId = document.getElementById('fld_input_id')?.value;
+  const qty = parseFloat(document.getElementById('fld_intake_quantity')?.value) || 0;
+  const price = parseFloat(document.getElementById('fld_unit_price')?.value) || 0;
+  const totalEl = document.getElementById('fld_total_value');
+  if (totalEl) totalEl.value = (qty * price).toFixed(2);
+  const newAvgEl = document.getElementById('fld_new_avg_preview');
+  const devEl = document.getElementById('fld_deviation_preview');
+  if (!inputId || qty <= 0) {
+    if (newAvgEl) newAvgEl.value = '';
+    if (devEl) devEl.value = '';
+    return;
+  }
+  const { newAvg, deviation } = await previewNewAvgPrice('inputs_inventory', inputId, qty, price);
+  if (newAvgEl) newAvgEl.value = newAvg.toFixed(4);
+  if (devEl) devEl.value = deviation.toFixed(2);
+}
+
+async function autoFillInputUnit() {
+  const inputId = document.getElementById('fld_input_id')?.value;
+  const unitEl = document.getElementById('fld_unit_display');
+  if (!inputId || !unitEl) return;
+  const item = linkCache[`inputs_inventory_${inputId}`];
+  if (item) {
+    const unitVal = item.unit;
+    let unitLabel = unitVal || '';
+    const found = getLookupOptions('unit').find(o => o.value === unitVal);
+    if (found) unitLabel = found.label;
+    unitEl.value = unitLabel;
+  }
+}
+
+function filterOutputInputs() { autoFillInputUnit(); }
+
+async function recalcExitCost() {
+  const inputId = document.getElementById('fld_input_id')?.value;
+  const qty = parseFloat(document.getElementById('fld_actual_output_quantity')?.value) || 0;
+  const unitPriceEl = document.getElementById('fld_unit_price');
+  const sysPriceEl = document.getElementById('fld_system_unit_price');
+  const totalEl = document.getElementById('fld_total_value');
+
+  if (!inputId) {
+    if (unitPriceEl) unitPriceEl.value = '';
+    if (sysPriceEl) sysPriceEl.value = '';
+    if (totalEl) totalEl.value = '';
+    return;
+  }
+  const item = linkCache[`inputs_inventory_${inputId}`];
+  const avg = Number(item?.avg_unit_price) || 0;
+  if (sysPriceEl) sysPriceEl.value = avg.toFixed(4);
+  if (unitPriceEl) unitPriceEl.value = avg.toFixed(4);
+  if (totalEl) totalEl.value = (qty * avg).toFixed(2);
+}
+
+// ============================================================
+// WORK ORDER EXECUTION - AUTO FILL / RECALC
+// ============================================================
+async function autoFillFromWorkOrder() {
+  const taskId = document.getElementById('fld_task_id')?.value;
+  if (!taskId) return;
+  const { data: wo } = await sb.from('work_orders').select('*').eq('id', taskId).single();
+  if (!wo) return;
+  const setVal = (col, val) => { const el = document.getElementById('fld_' + col); if (el) { if (el.tomselect) el.tomselect.setValue(val); else el.value = val; } };
+  setVal('service_type_actual', wo.planned_service_type || '');
+  setVal('field_id', wo.field_id || '');
+  setVal('staff_id', wo.staff_id || '');
+  recalcWorkOrderExecution();
+}
+
+async function onFuelEquipmentChange() {
+  const eqId = document.getElementById('fld_fuel_equipment_id')?.value;
+  const capEl = document.getElementById('fld_tank_capacity_display');
+  if (!eqId || !capEl) return;
+  const item = linkCache[`equipment_${eqId}`];
+  if (item) capEl.value = Number(item.tank_capacity) || 0;
+  recalcWorkOrderExecution();
+}
+
+function onFuelPctChange(col) {
+  const el = document.getElementById('fld_' + col);
+  const pctEl = document.getElementById('fld_' + col + '_pct');
+  if (el && pctEl) pctEl.textContent = (el.value || 0) + '%';
+  recalcWorkOrderExecution();
+}
+
+function recalcWorkOrderExecution() {
+  const capacity = parseFloat(document.getElementById('fld_tank_capacity_display')?.value) || 0;
+  const beforePct = parseFloat(document.getElementById('fld_fuel_before_pct')?.value) || 0;
+  const afterPct = parseFloat(document.getElementById('fld_fuel_after_pct')?.value) || 0;
+  const beforeWorkEl = document.getElementById('fld_fuel_before_work');
+  const afterWorkEl = document.getElementById('fld_fuel_after_work');
+  const consumedEl = document.getElementById('fld_fuel_consumed');
+  const perHourEl = document.getElementById('fld_fuel_per_hour');
+
+  const beforeL = capacity * beforePct / 100;
+  const afterL = capacity * afterPct / 100;
+  if (beforeWorkEl) beforeWorkEl.value = beforeL.toFixed(2);
+  if (afterWorkEl) afterWorkEl.value = afterL.toFixed(2);
+
+  const refueling = parseFloat(document.getElementById('fld_refueling_l')?.value) || 0;
+  const consumed = beforeL + refueling - afterL;
+  if (consumedEl) consumedEl.value = consumed.toFixed(2);
+
+  const startTime = document.getElementById('fld_start_time__date')?.value;
+  const startTimeT = document.getElementById('fld_start_time__time')?.value;
+  const endTime = document.getElementById('fld_end_time__date')?.value;
+  const endTimeT = document.getElementById('fld_end_time__time')?.value;
+  if (startTime && endTime) {
+    const startISO = mergeDatetime(startTime, startTimeT || '00:00');
+    const endISO = mergeDatetime(endTime, endTimeT || '00:00');
+    if (startISO && endISO) {
+      const hours = (new Date(endISO) - new Date(startISO)) / 3600000;
+      if (perHourEl) perHourEl.value = hours > 0 ? (consumed / hours).toFixed(2) : '0';
+    }
+  } else {
+    if (perHourEl) perHourEl.value = '';
+  }
+}
+
+async function autoFillRefuelingFromFuelOutput() {
+  const eqId = document.getElementById('fld_fuel_equipment_id')?.value;
+  const dateEl = document.getElementById('fld_start_time__date');
+  if (!eqId || !dateEl || !dateEl.value) { toast('Selecione equipamento e data de início'); return; }
+  const iso = ddmmyyyyToISO(dateEl.value);
+  if (!iso) return;
+  const { data } = await sb.from('fuel_output').select('liters_added, date_time')
+    .eq('equipment_id', eqId).gte('date_time', iso + 'T00:00:00').lte('date_time', iso + 'T23:59:59');
+  const total = (data || []).reduce((s,r) => s + (Number(r.liters_added) || 0), 0);
+  const refuelEl = document.getElementById('fld_refueling_l');
+  if (refuelEl) refuelEl.value = total.toFixed(2);
+  recalcWorkOrderExecution();
+  toast(`Sincronizado: ${total.toFixed(2)} L`);
+}
+
+// ============================================================
+// PARTS - AUTO FILL / RECALC
+// ============================================================
+async function autoFillPartsIntakePreview() {
+  const partId = document.getElementById('fld_part_id')?.value;
+  const avgEl = document.getElementById('fld_current_avg_preview');
+  const unitEl = document.getElementById('fld_unit_display');
+  if (!partId) {
+    if (avgEl) avgEl.value = '';
+    if (unitEl) unitEl.value = '';
+    return recalcPartsIntakePreview();
+  }
+  const item = linkCache[`parts_inventory_${partId}`];
+  if (item) {
+    if (avgEl) avgEl.value = Number(item.avg_unit_price || 0).toFixed(4);
+    if (unitEl) {
+      const unitVal = item.unit;
+      let unitLabel = unitVal || '';
+      const found = getLookupOptions('unit').find(o => o.value === unitVal);
+      if (found) unitLabel = found.label;
+      unitEl.value = unitLabel;
+    }
+  }
+  recalcPartsIntakePreview();
+}
+
+async function recalcPartsIntakePreview() {
+  const partId = document.getElementById('fld_part_id')?.value;
+  const qty = parseFloat(document.getElementById('fld_intake_quantity')?.value) || 0;
+  const price = parseFloat(document.getElementById('fld_unit_price')?.value) || 0;
+  const totalEl = document.getElementById('fld_total_value');
+  if (totalEl) totalEl.value = (qty * price).toFixed(2);
+  const newAvgEl = document.getElementById('fld_new_avg_preview');
+  const devEl = document.getElementById('fld_deviation_preview');
+  if (!partId || qty <= 0) {
+    if (newAvgEl) newAvgEl.value = '';
+    if (devEl) devEl.value = '';
+    return;
+  }
+  const { newAvg, deviation } = await previewNewAvgPrice('parts_inventory', partId, qty, price);
+  if (newAvgEl) newAvgEl.value = newAvg.toFixed(4);
+  if (devEl) devEl.value = deviation.toFixed(2);
+}
+
+async function autoFillPartsOutput() {
+  const partId = document.getElementById('fld_part_id')?.value;
+  const unitEl = document.getElementById('fld_unit_display');
+  const locEl = document.getElementById('fld_location_display');
+  const sysPriceEl = document.getElementById('fld_system_unit_price');
+  const unitPriceEl = document.getElementById('fld_unit_price');
+  if (!partId) {
+    if (unitEl) unitEl.value = '';
+    if (locEl) locEl.value = '';
+    if (sysPriceEl) sysPriceEl.value = '';
+    if (unitPriceEl) unitPriceEl.value = '';
+    return recalcPartsOutputCost();
+  }
+  const item = linkCache[`parts_inventory_${partId}`];
+  if (item) {
+    if (unitEl) {
+      const unitVal = item.unit;
+      let unitLabel = unitVal || '';
+      const found = getLookupOptions('unit').find(o => o.value === unitVal);
+      if (found) unitLabel = found.label;
+      unitEl.value = unitLabel;
+    }
+    if (locEl) locEl.value = [item.warehouse_zone, item.bin_location].filter(Boolean).join(' / ');
+    const avg = Number(item.avg_unit_price) || 0;
+    if (sysPriceEl) sysPriceEl.value = avg.toFixed(4);
+    if (unitPriceEl) unitPriceEl.value = avg.toFixed(4);
+  }
+  recalcPartsOutputCost();
+}
+
+async function recalcPartsOutputCost() {
+  const partId = document.getElementById('fld_part_id')?.value;
+  const qty = parseFloat(document.getElementById('fld_actual_output_quantity')?.value) || 0;
+  const unitPriceEl = document.getElementById('fld_unit_price');
+  const totalEl = document.getElementById('fld_total_value');
+  if (!partId) {
+    if (totalEl) totalEl.value = '';
+    return;
+  }
+  const item = linkCache[`parts_inventory_${partId}`];
+  const avg = Number(item?.avg_unit_price) || 0;
+  if (unitPriceEl) unitPriceEl.value = avg.toFixed(4);
+  if (totalEl) totalEl.value = (qty * avg).toFixed(2);
+}
+
+// ============================================================
+// FORM VIEW
+// ============================================================
+async function showForm(key, editId) {
+  const cfg = TABLES[key];
+  const content = document.getElementById('content');
+  const isEdit = editId !== undefined;
+
+  if (!canEdit(key)) { toast('Você não tem permissão para editar esta tabela'); openModule(key); return; }
+
+  tomSelectInstances.forEach(ts => { try { ts.destroy(); } catch(e){} });
+  tomSelectInstances = [];
+
+  for (const f of cfg.fields) {
+    if (f.type === 'link' || f.type === 'multilink') await loadLinkCacheForField(f);
+    if (f.type === 'lookup') await loadLookupCache(f.lookupCategory);
+  }
+
+  let record = {};
+  if (isEdit) {
+    const { data } = await sb.from(key).select('*').eq('id', editId).single();
+    record = data || {};
+  }
+
+  const today = todayDDMMYYYY();
+  let fieldsHtml = '';
+  let currentSection = '';
+  const searchableIds = [];
+
+  for (const f of cfg.fields) {
+    if (f.section && f.section !== currentSection) {
+      currentSection = f.section;
+      fieldsHtml += `<div class="section-label">${escapeHtml(currentSection)}</div>`;
+    }
+    let val = record[f.col] ?? '';
+    if (!isEdit && f.type === 'date' && !val) val = today;
+    const id = 'fld_' + f.col;
+    const reqStar = f.required ? ' <span class="req-star">*</span>' : '';
+    const readonlyAttr = f.readonly ? 'readonly' : '';
+    const onchangeAttr = f.onchange ? `onchange="${f.onchange}()"` : '';
+    let recalcAttr = '';
+    if (f.recalc === true) recalcAttr = 'oninput="recalcFuelOutput()"';
+    else if (f.recalc === 'woExec') recalcAttr = 'oninput="recalcWorkOrderExecution()"';
+    else if (f.recalc === 'intake') recalcAttr = 'oninput="recalcIntakePreview()"';
+    else if (f.recalc === 'exitCost') recalcAttr = 'oninput="recalcExitCost()"';
+    else if (f.recalc === 'fuelIntake') recalcAttr = 'oninput="recalcFuelIntakePreview()"';
+    else if (f.recalc === 'partsIntake') recalcAttr = 'oninput="recalcPartsIntakePreview()"';
+    else if (f.recalc === 'partsOutputCost') recalcAttr = 'oninput="recalcPartsOutputCost()"';
+
+    let labelHtml = f.label + reqStar;
+    if (f.col === 'refueling_l' && key === 'work_order_execution') {
+      labelHtml += ` <button type="button" style="margin-left:8px;padding:3px 10px;font-size:11px;background:#1565c0;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="autoFillRefuelingFromFuelOutput()">🔄 Sincronizar da Saída de Combustível</button>`;
+    }
+    fieldsHtml += `<div class="form-group" data-field="${f.col}"><label>${labelHtml}</label>`;
+
+    if (f.type === 'text') {
+      fieldsHtml += `<input id="${id}" value="${escapeHtml(val)}" placeholder="Digite ${f.label.toLowerCase()}" ${readonlyAttr} ${onchangeAttr}>`;
+    } else if (f.type === 'textarea') {
+      fieldsHtml += `<textarea id="${id}" rows="3" placeholder="Digite ${f.label.toLowerCase()}" ${readonlyAttr}>${escapeHtml(val)}</textarea>`;
+    } else if (f.type === 'number') {
+      fieldsHtml += `<input id="${id}" type="number" step="any" value="${val}" placeholder="0" ${readonlyAttr} ${onchangeAttr} ${recalcAttr}>`;
+    } else if (f.type === 'range') {
+      const pctVal = val === '' ? 0 : Number(val);
+      fieldsHtml += `<div class="slider-wrap">
+        <input id="${id}" type="range" min="0" max="100" step="5" value="${pctVal}" oninput="onFuelPctChange('${f.col}')" ${readonlyAttr}>
+        <span class="slider-pct" id="${id}_pct">${pctVal}%</span>
+      </div>`;
+    } else if (f.type === 'date') {
+      const displayVal = val ? isoToDDMMYYYY(val) : today;
+      fieldsHtml += `<input id="${id}" type="text" value="${displayVal}" placeholder="DD/MM/AAAA" pattern="\\d{2}/\\d{2}/\\d{4}" title="Formato: DD/MM/AAAA" maxlength="10" ${readonlyAttr} ${onchangeAttr}>`;
+    } else if (f.type === 'datetime') {
+      const sp = splitDatetime(val);
+      fieldsHtml += `<div class="dt-row">
+        <div><input id="${id}__date" type="text" value="${sp.date}" placeholder="DD/MM/AAAA" pattern="\\d{2}/\\d{2}/\\d{4}" maxlength="10" ${readonlyAttr} ${onchangeAttr}></div>
+        <div style="flex:0 0 120px"><input id="${id}__time" type="text" value="${sp.time}" placeholder="HH:MM" pattern="\\d{2}:\\d{2}" maxlength="5" ${readonlyAttr} ${onchangeAttr}></div>
+      </div>`;
+    } else if (f.type === 'select') {
+      fieldsHtml += `<select id="${id}" ${onchangeAttr} ${readonlyAttr}><option value="">Selecione...</option>`;
+      for (const opt of f.opts) fieldsHtml += `<option value="${escapeHtml(opt)}" ${val === opt ? 'selected' : ''}>${escapeHtml(opt)}</option>`;
+      fieldsHtml += `</select>`;
+    } else if (f.type === 'lookup') {
+      const opts = getLookupOptions(f.lookupCategory);
+      fieldsHtml += `<select id="${id}" ${onchangeAttr} ${readonlyAttr}><option value="">Selecione...</option>`;
+      for (const opt of opts) fieldsHtml += `<option value="${escapeHtml(opt.value)}" ${val === opt.value ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`;
+      fieldsHtml += `</select>`;
+    } else if (f.type === 'multiselect') {
+      const selected = Array.isArray(val) ? val : [];
+      fieldsHtml += `<div class="multi-check" id="${id}">`;
+      for (const opt of f.opts) fieldsHtml += `<label><input type="checkbox" value="${escapeHtml(opt)}" ${selected.includes(opt) ? 'checked' : ''} ${readonlyAttr}> ${escapeHtml(opt)}</label>`;
+      fieldsHtml += `</div>`;
+    } else if (f.type === 'multilink') {
+      const selected = Array.isArray(val) ? val.map(String) : [];
+      const linkItems = Object.entries(linkCache).filter(([k,v]) => k.startsWith(f.table + '_') && typeof v === 'object' && v.id).map(([k,v]) => v);
+      fieldsHtml += `<div class="multi-check" id="${id}">`;
+      for (const item of linkItems) fieldsHtml += `<label><input type="checkbox" value="${item.id}" ${selected.includes(String(item.id)) ? 'checked' : ''} ${readonlyAttr}> ${escapeHtml(String(item[f.showField]))}</label>`;
+      fieldsHtml += `</div>`;
+    } else if (f.type === 'link') {
+      const linkItems = Object.entries(linkCache).filter(([k,v]) => k.startsWith(f.table + '_') && typeof v === 'object' && v.id).map(([k,v]) => v);
+      const isSearchable = SEARCHABLE_LINK_TABLES.includes(f.table) && linkItems.length > 15;
+      if (isSearchable && !f.readonly) searchableIds.push(id);
+      fieldsHtml += `<select id="${id}" ${onchangeAttr} ${readonlyAttr} ${isSearchable && !f.readonly ? 'data-searchable="1"' : ''}><option value="">Selecione...</option>`;
+      for (const item of linkItems) fieldsHtml += `<option value="${item.id}" ${val === item.id ? 'selected' : ''}>${escapeHtml(String(item[f.showField]))}</option>`;
+      fieldsHtml += `</select>`;
+    } else if (f.type === 'linkedreadonly') {
+      fieldsHtml += `<input id="${id}" value="" readonly placeholder="Auto do item vinculado">`;
+    }
+    fieldsHtml += `</div>`;
+  }
+
+  let extraSectionHtml = '';
+  if (cfg.hasPlannedInputs) {
+    extraSectionHtml += `
+      <div class="section-label">Insumos Planejados</div>
+      <div class="planned-inputs-box" id="plannedInputsBox">
+        <div id="plannedInputsRows"></div>
+        <button type="button" class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="addPlannedInputRow()">+ Adicionar Insumo Planejado</button>
+      </div>`;
+  }
+  if (cfg.hasPartsUsed) {
+    extraSectionHtml += `
+      <div class="section-label">5. Peças Utilizadas</div>
+      <div class="planned-inputs-box" id="partsUsedBox">
+        <div id="partsUsedRows"></div>
+        <button type="button" class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="addPartsUsedRow()">+ Adicionar Peça Utilizada</button>
+        <div style="margin-top:12px;padding:10px;background:#f0f4f8;border-radius:6px">
+          <div class="inv-row"><span class="label">Custo das Peças</span><span class="value" id="partsCostDisplay">0,00</span></div>
+        </div>
+      </div>`;
+  }
+
+  content.innerHTML = `<div class="section-header">
+    <button class="back-btn" onclick="openModule('${key}')">← Voltar</button>
+    <h3>${isEdit ? 'Editar' : 'Adicionar'} ${cfg.label}</h3>
+  </div>
+  <div class="form-container">
+    <div class="card">
+      ${fieldsHtml}
+      ${extraSectionHtml}
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="saveRecord('${key}', ${isEdit ? editId : 'null'})">${isEdit ? 'Atualizar' : 'Salvar'} Registro</button>
+        <button class="btn btn-outline" onclick="clearForm('${key}')">Limpar Formulário</button>
+      </div>
+    </div>
+  </div>`;
+
+  searchableIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      try {
+        const ts = new TomSelect(el, { placeholder: 'Digite para pesquisar...', allowEmptyOption: true, maxOptions: 500, sortField: { field: 'text', direction: 'asc' } });
+        tomSelectInstances.push(ts);
+      } catch(e) { console.warn('TomSelect init failed', id, e); }
+    }
+  });
+
+  if (cfg.autoNumber && !isEdit) {
+    const nextNum = await generateNextDocNumber(cfg.autoNumber, key);
+    const el = document.getElementById('fld_' + cfg.autoNumber.field);
+    if (el) el.value = nextNum;
+  }
+
+  if (cfg.hasPlannedInputs && isEdit) {
+    const { data: planned } = await sb.from('inputs_per_work_order').select('*').eq('work_order_id', editId);
+    for (const p of (planned || [])) await addPlannedInputRow(p);
+  }
+
+  if (cfg.hasPartsUsed && isEdit) {
+    const { data: partsUsed } = await sb.from('maintenance_parts').select('*').eq('maintenance_log_id', editId);
+    for (const p of (partsUsed || [])) await addPartsUsedRow(p);
+    recalcPartsCost();
+  }
+
+  if (key === 'fuel_output' && isEdit) recalcFuelOutput();
+  if (key === 'work_order_execution') {
+    recalcWorkOrderExecution();
+    if (isEdit) await autoFillFromWorkOrder();
+    ['fuel_before_pct', 'fuel_after_pct'].forEach(col => {
+      const el = document.getElementById('fld_' + col);
+      const pctEl = document.getElementById('fld_' + col + '_pct');
+      if (el && pctEl) pctEl.textContent = (el.value || 0) + '%';
+    });
+  }
+  if (key === 'inputs_intake') { const sel = document.getElementById('fld_input_id'); if (sel && sel.value) await autoFillIntakePreview(); }
+  if (key === 'inputs_output') { const sel = document.getElementById('fld_input_id'); if (sel && sel.value) await autoFillInputUnit(); }
+  if (key === 'fuel_intake') await autoFillFuelIntakePreview();
+  if (key === 'fuel_output') await autoFillFuelOutputPrice();
+  if (key === 'maintenance_logs') recalcDowntime();
+  if (key === 'parts_intake') { const sel = document.getElementById('fld_part_id'); if (sel && sel.value) await autoFillPartsIntakePreview(); }
+  if (key === 'parts_output' || key === 'parts_movements') { const sel = document.getElementById('fld_part_id'); if (sel && sel.value) await autoFillPartsOutput(); }
+}
+
+// ============================================================
+// CLEAR FORM
+// ============================================================
+async function clearForm(key) {
+  const ok = confirm('Limpar este formulário? Todas as alterações não salvas serão perdidas.');
+  if (!ok) return;
+  const cfg = TABLES[key];
+  const today = todayDDMMYYYY();
+  const now = nowHHMM();
+  for (const f of cfg.fields) {
+    if (f.previewOnly) continue;
+    const el = document.getElementById('fld_' + f.col);
+    if (!el) continue;
+    if (f.type === 'multilink' || f.type === 'multiselect') el.querySelectorAll('input:checked').forEach(c => { c.checked = false; });
+    else if (f.type === 'range') { el.value = 0; const pctEl = document.getElementById('fld_' + f.col + '_pct'); if (pctEl) pctEl.textContent = '0%'; }
+    else if (f.type === 'datetime') {
+      const dateEl = document.getElementById('fld_' + f.col + '__date');
+      const timeEl = document.getElementById('fld_' + f.col + '__time');
+      if (dateEl) dateEl.value = today;
+      if (timeEl) timeEl.value = now;
+    }
+    else if (f.type === 'date') el.value = today;
+    else if (f.type === 'link' || f.type === 'lookup') { if (el.tomselect) el.tomselect.clear(); else el.value = ''; }
+    else if (f.type === 'linkedreadonly') el.value = '';
+    else el.value = '';
+  }
+  if (cfg.autoNumber) {
+    const numEl = document.getElementById('fld_' + cfg.autoNumber.field);
+    if (numEl) numEl.value = await generateNextDocNumber(cfg.autoNumber, key);
+  }
+  if (cfg.hasPartsUsed) { document.getElementById('partsUsedRows').innerHTML = ''; recalcPartsCost(); }
+  if (cfg.hasPlannedInputs) document.getElementById('plannedInputsRows').innerHTML = '';
+  if (key === 'fuel_intake') await autoFillFuelIntakePreview();
+  if (key === 'fuel_output') await autoFillFuelOutputPrice();
+  if (key === 'inputs_intake') await autoFillIntakePreview();
+  if (key === 'inputs_output') await autoFillInputUnit();
+  if (key === 'work_order_execution') recalcWorkOrderExecution();
+  if (key === 'maintenance_logs') recalcDowntime();
+  if (key === 'parts_intake') await autoFillPartsIntakePreview();
+  if (key === 'parts_output' || key === 'parts_movements') await autoFillPartsOutput();
+  toast('Formulário limpo');
+}
+
+// ============================================================
+// 计划投入品
+// ============================================================
+async function addPlannedInputRow(data) {
+  const rows = document.getElementById('plannedInputsRows');
+  if (!rows) return;
+  await loadLinkCache('inputs_inventory', 'input_name', ['unit', 'avg_unit_price', 'current_stock']);
+  const inputItems = Object.entries(linkCache).filter(([k,v]) => k.startsWith('inputs_inventory_') && typeof v === 'object' && v.id).map(([k,v]) => v);
+  const rowId = 'plannedRow_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  const div = document.createElement('div');
+  div.className = 'planned-row'; div.id = rowId;
+  let optsHtml = '<option value="">Selecione insumo...</option>';
+  for (const item of inputItems) {
+    const sel = data && data.input_id === item.id ? 'selected' : '';
+    optsHtml += `<option value="${item.id}" data-unit="${escapeHtml(item.unit || '')}" ${sel}>${escapeHtml(item.input_name)}</option>`;
+  }
+  let initialUnit = '';
+  if (data && data.input_id) {
+    const item = linkCache[`inputs_inventory_${data.input_id}`];
+    if (item && item.unit) { const found = getLookupOptions('unit').find(o => o.value === item.unit); initialUnit = found ? found.label : item.unit; }
+  }
+  div.innerHTML = `
+    <div style="flex:2"><label>Insumo</label><select class="planned-input-select" onchange="onPlannedInputChange('${rowId}')">${optsHtml}</select></div>
+    <div style="flex:0 0 90px"><label>Unidade</label><input type="text" class="planned-unit" value="${escapeHtml(initialUnit)}" readonly placeholder="—"></div>
+    <div style="flex:1"><label>Qtd</label><input type="number" step="any" class="planned-qty" value="${data ? (data.quantity_used ?? '') : ''}" placeholder="0"></div>
+    <div style="flex:0 0 auto;padding-bottom:4px"><button type="button" class="btn btn-danger btn-sm" onclick="document.getElementById('${rowId}').remove()">✕</button></div>
+  `;
+  rows.appendChild(div);
+}
+
+function onPlannedInputChange(rowId) {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  const sel = row.querySelector('.planned-input-select');
+  const unitEl = row.querySelector('.planned-unit');
+  const opt = sel.options[sel.selectedIndex];
+  const unitVal = opt?.getAttribute('data-unit') || '';
+  let unitLabel = unitVal;
+  if (unitVal) { const found = getLookupOptions('unit').find(o => o.value === unitVal); if (found) unitLabel = found.label; }
+  unitEl.value = unitLabel;
+}
+
+// ============================================================
+// 零件领用
+// ============================================================
+async function addPartsUsedRow(data) {
+  const rows = document.getElementById('partsUsedRows');
+  if (!rows) return;
+  await loadLinkCache('parts_inventory', 'part_name', ['unit', 'avg_unit_price', 'current_stock', 'abc_class']);
+  const partItems = Object.entries(linkCache).filter(([k,v]) => k.startsWith('parts_inventory_') && typeof v === 'object' && v.id).map(([k,v]) => v);
+  const rowId = 'partsUsedRow_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+  const div = document.createElement('div');
+  div.className = 'planned-row'; div.id = rowId;
+  let optsHtml = '<option value="">Selecione peça...</option>';
+  for (const item of partItems) {
+    const sel = data && data.part_id === item.id ? 'selected' : '';
+    optsHtml += `<option value="${item.id}" data-unit="${escapeHtml(item.unit || '')}" data-price="${item.avg_unit_price || 0}" data-abc="${escapeHtml(item.abc_class || 'C')}" ${sel}>[${escapeHtml(item.abc_class || 'C')}] ${escapeHtml(item.part_name)}</option>`;
+  }
+  let initialUnit = ''; let initialPrice = 0;
+  if (data && data.part_id) {
+    const item = linkCache[`parts_inventory_${data.part_id}`];
+    if (item && item.unit) { const found = getLookupOptions('unit').find(o => o.value === item.unit); initialUnit = found ? found.label : item.unit; }
+    if (item) initialPrice = Number(item.avg_unit_price) || 0;
+  }
+  div.innerHTML = `
+    <div style="flex:2"><label>Peça</label><select class="planned-input-select" onchange="onPartsUsedChange('${rowId}')">${optsHtml}</select></div>
+    <div style="flex:0 0 80px"><label>Unidade</label><input type="text" class="planned-unit" value="${escapeHtml(initialUnit)}" readonly placeholder="—"></div>
+    <div style="flex:0 0 90px"><label>Preço Unit.</label><input type="number" step="any" class="planned-price" value="${initialPrice.toFixed(2)}" readonly></div>
+    <div style="flex:1"><label>Qtd</label><input type="number" step="any" class="planned-qty" value="${data ? (data.quantity_used ?? '') : ''}" placeholder="0" oninput="recalcPartsCost()"></div>
+    <div style="flex:0 0 90px"><label>Total</label><input type="text" class="planned-total" value="0.00" readonly></div>
+    <div style="flex:0 0 auto;padding-bottom:4px"><button type="button" class="btn btn-danger btn-sm" onclick="document.getElementById('${rowId}').remove();recalcPartsCost();">✕</button></div>
+  `;
+  rows.appendChild(div);
+  onPartsUsedChange(rowId);
+}
+
+function onPartsUsedChange(rowId) {
+  const row = document.getElementById(rowId);
+  if (!row) return;
+  const sel = row.querySelector('.planned-input-select');
+  const unitEl = row.querySelector('.planned-unit');
+  const priceEl = row.querySelector('.planned-price');
+  const opt = sel.options[sel.selectedIndex];
+  const unitVal = opt?.getAttribute('data-unit') || '';
+  const priceVal = opt?.getAttribute('data-price') || '0';
+  let unitLabel = unitVal;
+  if (unitVal) { const found = getLookupOptions('unit').find(o => o.value === unitVal); if (found) unitLabel = found.label; }
+  unitEl.value = unitLabel;
+  priceEl.value = Number(priceVal).toFixed(2);
+  recalcPartsCost();
+}
+
+function recalcPartsCost() {
+  const rows = document.querySelectorAll('#partsUsedRows .planned-row');
+  let total = 0;
+  rows.forEach(r => {
+    const price = parseFloat(r.querySelector('.planned-price')?.value) || 0;
+    const qty = parseFloat(r.querySelector('.planned-qty')?.value) || 0;
+    const rowTotal = price * qty;
+    const totEl = r.querySelector('.planned-total');
+    if (totEl) totEl.value = rowTotal.toFixed(2);
+    total += rowTotal;
+  });
+  const display = document.getElementById('partsCostDisplay');
+  if (display) display.textContent = total.toFixed(2).replace('.', ',');
+  const laborEl = document.getElementById('fld_labor_cost');
+  const costEl = document.getElementById('fld_cost');
+  if (laborEl && costEl) costEl.value = ((parseFloat(laborEl.value) || 0) + total).toFixed(2);
+}
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ============================================================
+// INVENTORY DASHBOARD
+// ============================================================
+async function showInventoryDashboard(key) {
+  const content = document.getElementById('content');
+  const cfg = TABLES[key];
+  let html = `<div class="section-header">
+    <button class="back-btn" onclick="goBack()">← Voltar</button>
+    <h3>${cfg.label}</h3>
+  </div>`;
+
+  if (cfg.isInventoryDashboard === 'fuel') {
+    const { data: inv } = await sb.from('fuel_inventory').select('*');
+    const { data: intake } = await sb.from('fuel_intake').select('fuel_type,tank_location,intake_quantity');
+    const { data: output } = await sb.from('fuel_output').select('fuel_type,tank_location,liters_added');
+    html += `<div class="form-container">`;
+    for (const item of (inv || [])) {
+      const totalIn = (intake || []).filter(r => r.fuel_type === item.fuel_type && r.tank_location === item.tank_location).reduce((s,r) => s + (Number(r.intake_quantity) || 0), 0);
+      const totalOut = (output || []).filter(r => r.fuel_type === item.fuel_type && r.tank_location === item.tank_location).reduce((s,r) => s + (Number(r.liters_added) || 0), 0);
+      const current = (Number(item.initial_stock) || 0) + totalIn - totalOut;
+      const status = current <= 0 ? 'out' : current <= (Number(item.minimum_stock) || 0) ? 'low' : 'ok';
+      const badgeClass = status === 'out' ? 'inv-out' : status === 'low' ? 'inv-low' : 'inv-ok';
+      const badgeText = status === 'out' ? 'SEM ESTOQUE' : status === 'low' ? 'ESTOQUE BAIXO' : 'OK';
+      html += `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:16px">${item.fuel_type} — ${item.tank_location}</strong>
+          <span class="inv-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="inv-row"><span class="label">Código</span><span class="value">${item.fuel_code || '-'}</span></div>
+        <div class="inv-row"><span class="label">Estoque Inicial</span><span class="value">${Number(item.initial_stock || 0).toFixed(1)} ${item.unit || 'L'}</span></div>
+        <div class="inv-row"><span class="label">Total Entradas</span><span class="value" style="color:#2e7d32">+${totalIn.toFixed(1)} ${item.unit || 'L'}</span></div>
+        <div class="inv-row"><span class="label">Total Saídas</span><span class="value" style="color:#c62828">-${totalOut.toFixed(1)} ${item.unit || 'L'}</span></div>
+        <div class="inv-row" style="border-top:2px solid #333;padding-top:10px;margin-top:6px">
+          <span class="label" style="font-weight:700">Estoque Atual</span>
+          <span class="value" style="font-size:18px">${current.toFixed(1)} ${item.unit || 'L'}</span>
+        </div>
+        <div class="inv-row"><span class="label">Estoque Mínimo</span><span class="value">${Number(item.minimum_stock || 0).toFixed(1)} ${item.unit || 'L'}</span></div>
+        <div class="inv-row"><span class="label">Preço Médio</span><span class="value">${Number(item.avg_unit_price || 0).toFixed(4)}</span></div>
+      </div>`;
+    }
+    html += `</div>`;
+  } else if (cfg.isInventoryDashboard === 'inputs') {
+    const { data: inv } = await sb.from('inputs_inventory').select('*');
+    const { data: intake } = await sb.from('inputs_intake').select('input_id,intake_quantity');
+    const { data: movements } = await sb.from('inventory_movements').select('input_id,quantity');
+    const { data: output } = await sb.from('inputs_output').select('input_id,actual_output_quantity');
+    html += `<div class="form-container">`;
+    for (const item of (inv || [])) {
+      const totalIn = (intake || []).filter(r => r.input_id === item.id).reduce((s,r) => s + (Number(r.intake_quantity) || 0), 0);
+      const totalOut = (output || []).filter(r => r.input_id === item.id).reduce((s,r) => s + (Number(r.actual_output_quantity) || 0), 0);
+      const moveAdj = (movements || []).filter(r => r.input_id === item.id).reduce((s,r) => s + (Number(r.quantity) || 0), 0);
+      const current = (Number(item.opening_stock) || 0) + totalIn + moveAdj - totalOut;
+      const status = current <= 0 ? 'out' : current <= (Number(item.minimum_stock) || 0) ? 'low' : 'ok';
+      const badgeClass = status === 'out' ? 'inv-out' : status === 'low' ? 'inv-low' : 'inv-ok';
+      const badgeText = status === 'out' ? 'SEM ESTOQUE' : status === 'low' ? 'ESTOQUE BAIXO' : 'OK';
+      html += `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:16px">${item.input_name}</strong>
+          <span class="inv-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="inv-row"><span class="label">Código</span><span class="value">${item.input_code || '-'}</span></div>
+        <div class="inv-row"><span class="label">Estoque Inicial</span><span class="value">${Number(item.opening_stock || 0).toFixed(1)}</span></div>
+        <div class="inv-row"><span class="label">Total Entradas</span><span class="value" style="color:#2e7d32">+${totalIn.toFixed(1)}</span></div>
+        <div class="inv-row"><span class="label">Total Saídas</span><span class="value" style="color:#c62828">-${totalOut.toFixed(1)}</span></div>
+        <div class="inv-row"><span class="label">Ajustes</span><span class="value">${moveAdj >= 0 ? '+' : ''}${moveAdj.toFixed(1)}</span></div>
+        <div class="inv-row" style="border-top:2px solid #333;padding-top:10px;margin-top:6px">
+          <span class="label" style="font-weight:700">Estoque Atual</span>
+          <span class="value" style="font-size:18px">${current.toFixed(1)}</span>
+        </div>
+        <div class="inv-row"><span class="label">Estoque Mínimo</span><span class="value">${Number(item.minimum_stock || 0).toFixed(1)}</span></div>
+        <div class="inv-row"><span class="label">Preço Médio</span><span class="value">${Number(item.avg_unit_price || 0).toFixed(4)}</span></div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  content.innerHTML = html;
+}
+
+// ============================================================
+// PARTS INVENTORY DASHBOARD
+// ============================================================
+async function showPartsInventoryDashboard(key) {
+  const content = document.getElementById('content');
+  const { data: inv } = await sb.from('parts_inventory').select('*');
+  const { data: intake } = await sb.from('parts_intake').select('part_id,intake_quantity');
+  const { data: movements } = await sb.from('parts_movements').select('part_id,quantity');
+  const { data: output } = await sb.from('parts_output').select('part_id,actual_output_quantity');
+
+  let html = `<div class="section-header">
+    <button class="back-btn" onclick="goBack()">← Voltar</button>
+    <h3>Estoque de Peças</h3>
+  </div><div class="form-container">`;
+
+  const byClass = { A: [], B: [], C: [] };
+  for (const item of (inv || [])) {
+    const totalIn = (intake || []).filter(r => r.part_id === item.id).reduce((s,r) => s + (Number(r.intake_quantity) || 0), 0);
+    const totalOut = (output || []).filter(r => r.part_id === item.id).reduce((s,r) => s + (Number(r.actual_output_quantity) || 0), 0);
+    const moveAdj = (movements || []).filter(r => r.part_id === item.id).reduce((s,r) => s + (Number(r.quantity) || 0), 0);
+    const current = (Number(item.opening_stock) || 0) + totalIn + moveAdj - totalOut;
+    const row = { ...item, current_stock_calc: current };
+    (byClass[item.abc_class] || byClass.C).push(row);
+  }
+
+  for (const cls of ['A', 'B', 'C']) {
+    const items = byClass[cls];
+    if (!items || items.length === 0) continue;
+    const clsBadge = cls === 'A' ? 'abc-a' : cls === 'B' ? 'abc-b' : 'abc-c';
+    html += `<div class="group-header"><span class="group-icon">📦</span><div><div class="group-title">Classe ${cls} (${items.length} itens)</div></div></div><div class="dashboard">`;
+    for (const item of items) {
+      const current = item.current_stock_calc;
+      const status = current <= 0 ? 'out' : current <= (Number(item.minimum_stock) || 0) ? 'low' : 'ok';
+      const badgeClass = status === 'out' ? 'inv-out' : status === 'low' ? 'inv-low' : 'inv-ok';
+      const badgeText = status === 'out' ? 'SEM ESTOQUE' : status === 'low' ? 'BAIXO' : 'OK';
+      html += `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:15px">${item.part_name}</strong>
+          <span>
+            <span class="inv-badge ${clsBadge}">${cls}</span>
+            <span class="inv-badge ${badgeClass}">${badgeText}</span>
+          </span>
+        </div>
+        <div class="inv-row"><span class="label">Código</span><span class="value">${item.part_code || '-'}</span></div>
+        <div class="inv-row"><span class="label">Localização</span><span class="value">${[item.warehouse_zone, item.bin_location].filter(Boolean).join(' / ') || '-'}</span></div>
+        <div class="inv-row" style="border-top:2px solid #333;padding-top:10px;margin-top:6px">
+          <span class="label" style="font-weight:700">Estoque Atual</span>
+          <span class="value" style="font-size:18px">${current.toFixed(1)}</span>
+        </div>
+        <div class="inv-row"><span class="label">Estoque Mínimo</span><span class="value">${Number(item.minimum_stock || 0).toFixed(1)}</span></div>
+        <div class="inv-row"><span class="label">Preço Médio</span><span class="value">${Number(item.avg_unit_price || 0).toFixed(4)}</span></div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  content.innerHTML = html;
+}
+
+// ============================================================
+// EQUIPMENT REPORT
+// ============================================================
+async function showEquipmentReport() {
+  const content = document.getElementById('content');
+  const { data: equipment } = await sb.from('equipment').select('*');
+  const { data: logs } = await sb.from('maintenance_logs').select('*');
+
+  let html = `<div class="section-header">
+    <button class="back-btn" onclick="goBack()">← Voltar</button>
+    <h3>Relatório de Equipamentos</h3>
+  </div><div class="form-container">`;
+
+  for (const eq of (equipment || [])) {
+    const eqLogs = (logs || []).filter(l => l.equipment_id === eq.id);
+    const totalCost = eqLogs.reduce((s,l) => s + (Number(l.cost) || 0), 0);
+    const totalDowntime = eqLogs.reduce((s,l) => s + (Number(l.downtime_hours) || 0), 0);
+    const openCount = eqLogs.filter(l => l.status === 'Open' || l.status === 'Aberto' || l.status === 'In Progress' || l.status === 'Em Andamento').length;
+
+    html += `<div class="card">
+      <div style="margin-bottom:12px"><strong style="font-size:16px">${eq.equipment_name}</strong>
+        <span style="color:#666;font-size:13px"> (${eq.equipment_code})</span></div>
+      <div class="report-summary">
+        <div><div class="num">${eqLogs.length}</div><div class="lbl">Total Reparos</div></div>
+        <div><div class="num">${openCount}</div><div class="lbl">Abertos</div></div>
+        <div><div class="num">${totalCost.toFixed(0)}</div><div class="lbl">Custo Total</div></div>
+        <div><div class="num">${totalDowntime.toFixed(1)}</div><div class="lbl">Parada (h)</div></div>
+      </div>
+    </div>`;
+  }
+  html += `</div>`;
+  content.innerHTML = html;
+}
+
+// ============================================================
+// USER MANAGEMENT
+// ============================================================
+async function showUserManagement() {
+  const content = document.getElementById('content');
+  const { data, error } = await sb.from('app_users').select('*').order('id');
+  if (error) { toast('Erro: ' + error.message); return; }
+
+  let html = `<div class="section-header">
+    <button class="back-btn" onclick="goBack()">← Voltar</button>
+    <h3>Gerenciamento de Usuários</h3>
+    <button class="btn btn-primary btn-sm" onclick="showUserForm()">+ Adicionar Usuário</button>
+  </div><div class="list-container">`;
+
+  for (const u of (data || [])) {
+    const viewCount = u.role === 'admin' ? 'Todos' : (u.allowed_tables ? u.allowed_tables.length : 0) + ' visíveis';
+    const editCount = u.role === 'admin' ? 'Todos' : (u.editable_tables ? u.editable_tables.length : 0) + ' editáveis';
+    html += `<div class="list-item">
+      <div class="info">
+        <div class="main">${u.display_name || u.username}</div>
+        <div class="sub">@${u.username} · ${u.role} · ${viewCount}, ${editCount}</div>
+      </div>
+      <div class="actions">
+        <button onclick="showUserQR('${u.username}','${u.display_name || u.username}')" title="QR Code">📱</button>
+        <button onclick="showUserForm(${u.id})" title="Editar">✏️</button>
+        ${u.username !== 'admin' ? `<button onclick="deleteUser(${u.id})" title="Excluir">🗑️</button>` : ''}
+      </div>
+    </div>`;
+  }
+  html += `</div>`;
+  content.innerHTML = html;
+}
+
+function showUserQR(username, displayName) {
+  const baseUrl = window.location.href.split('?')[0].split('#')[0];
+  const loginUrl = baseUrl + '?u=' + encodeURIComponent(username);
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${encodeURIComponent(loginUrl)}`;
+  const old = document.getElementById('qrModal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'qrModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px';
+  modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:28px;text-align:center;max-width:340px;width:100%">
+      <h3 style="color:#1a5632;margin-bottom:4px">📱 ${escapeHtml(displayName)}</h3>
+      <p style="color:#666;font-size:13px;margin-bottom:16px">Escaneie com a câmera do celular para entrar</p>
+      <img src="${qrSrc}" style="width:240px;height:240px;border-radius:8px" alt="QR" onerror="this.style.display='none'">
+      <p style="font-size:11px;color:#999;margin-top:8px">Usuário: <strong>${escapeHtml(username)}</strong></p>
+      <p style="font-size:11px;color:#999">Basta inserir a senha</p>
+      <button class="btn btn-outline" style="width:100%;margin-top:16px" onclick="document.getElementById('qrModal').remove()">Fechar</button>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function showUserForm(editId) {
+  const content = document.getElementById('content');
+  let user = {};
+  if (editId) {
+    const { data } = await sb.from('app_users').select('*').eq('id', editId).single();
+    user = data || {};
+  }
+  const permTables = Object.entries(TABLES).filter(([k,v]) => !v.isAdmin);
+  const userView = user.allowed_tables || [];
+  const userEdit = user.editable_tables || [];
+  let permHtml = '';
+  for (const [k,v] of permTables) {
+    const isEdit = userEdit.includes(k);
+    const isView = userView.includes(k);
+    const state = isEdit ? 'edit' : (isView ? 'view' : 'none');
+    permHtml += `<div class="perm-row">
+      <span style="font-size:13px">${v.icon} ${v.label}</span>
+      <select class="perm-select" data-table="${k}">
+        <option value="none" ${state==='none'?'selected':''}>Nenhum</option>
+        <option value="view" ${state==='view'?'selected':''}>Somente Visualizar</option>
+        <option value="edit" ${state==='edit'?'selected':''}>Visualizar + Editar</option>
+      </select>
+    </div>`;
+  }
+  content.innerHTML = `<div class="section-header">
+    <button class="back-btn" onclick="showUserManagement()">← Voltar</button>
+    <h3>${editId ? 'Editar' : 'Adicionar'} Usuário</h3>
+  </div>
+  <div class="form-container"><div class="card">
+    <div class="form-group"><label>Usuário</label><input id="usr_username" value="${user.username || ''}" placeholder="usuário"></div>
+    <div class="form-group"><label>Nome de Exibição</label><input id="usr_displayname" value="${user.display_name || ''}" placeholder="Nome de exibição"></div>
+    <div class="form-group"><label>${editId ? 'Nova Senha (deixe em branco para manter)' : 'Senha'}</label><input id="usr_password" type="password" placeholder="senha"></div>
+    <div class="form-group"><label>Função</label><select id="usr_role">
+      <option value="staff" ${user.role === 'staff' ? 'selected' : ''}>Funcionário</option>
+      <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrador (acesso total)</option>
+    </select></div>
+    <div class="form-group" id="permGroup">
+      <label>Permissões de Tabela</label>
+      ${permHtml}
+      <p style="font-size:11px;color:#999;margin-top:8px">Nota: as permissões terão efeito após o usuário fazer login novamente.</p>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="saveUser(${editId || 'null'})">${editId ? 'Atualizar' : 'Criar'} Usuário</button>
+  </div></div>`;
+}
+
+async function saveUser(editId) {
+  const username = document.getElementById('usr_username').value.trim();
+  const displayName = document.getElementById('usr_displayname').value.trim();
+  const password = document.getElementById('usr_password').value;
+  const role = document.getElementById('usr_role').value;
+  if (!username) { toast('Usuário obrigatório'); return; }
+  let allowedTables = []; let editableTables = [];
+  if (role === 'admin') {
+    allowedTables = Object.keys(TABLES).filter(k => !TABLES[k].isAdmin);
+    editableTables = [...allowedTables];
+  } else {
+    for (const sel of document.querySelectorAll('.perm-select')) {
+      const table = sel.dataset.table;
+      if (sel.value === 'view') allowedTables.push(table);
+      else if (sel.value === 'edit') { allowedTables.push(table); editableTables.push(table); }
+    }
+    if (allowedTables.length === 0) { toast('Selecione pelo menos uma tabela'); return; }
+  }
+  const record = { username, display_name: displayName, role, allowed_tables: allowedTables, editable_tables: editableTables };
+  if (password) record.password_hash = await sha256(password);
+  else if (!editId) { toast('Senha obrigatória para novo usuário'); return; }
+  if (editId) {
+    const { error } = await sb.from('app_users').update(record).eq('id', editId);
+    if (error) { toast('Erro: ' + error.message); return; }
+    toast('Usuário atualizado');
+  } else {
+    const { error } = await sb.from('app_users').insert(record);
+    if (error) { toast('Erro: ' + error.message); return; }
+    toast('Usuário criado');
+  }
+  showUserManagement();
+}
+
+async function deleteUser(id) {
+  if (!confirm('Excluir este usuário?')) return;
+  const { error } = await sb.from('app_users').delete().eq('id', id);
+  if (error) { toast('Erro: ' + error.message); return; }
+  toast('Usuário excluído');
+  showUserManagement();
+}
+
+// ============================================================
+// 停机时间自动计算
+// ============================================================
+function recalcDowntime() {
+  const startDate = document.getElementById('fld_maintenance_date')?.value;
+  const endDate = document.getElementById('fld_completion_date')?.value;
+  const el = document.getElementById('fld_downtime_hours');
+  if (!el) return;
+  if (!startDate || !endDate) { el.value = ''; return; }
+  const startISO = ddmmyyyyToISO(startDate);
+  const endISO = ddmmyyyyToISO(endDate);
+  if (!startISO || !endISO) { el.value = ''; return; }
+  const days = (new Date(endISO) - new Date(startISO)) / 86400000;
+  if (days < 0) { el.value = '0'; return; }
+  el.value = (days === 0 ? 8 : days * 24).toFixed(1);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+const savedSession = localStorage.getItem('session');
+if (savedSession) {
+  const url = EMBEDDED_URL || localStorage.getItem('sb_url');
+  const key = EMBEDDED_KEY || localStorage.getItem('sb_key');
+  if (url && key) {
+    sb = supabase.createClient(url, key);
+    currentUser = JSON.parse(savedSession);
+  }
+}
+
+init();
+
+if (currentUser) {
+  document.getElementById('loginScreen') && (document.getElementById('loginScreen').style.display = 'none');
+  document.getElementById('configScreen') && (document.getElementById('configScreen').style.display = 'none');
+  document.getElementById('mainApp').style.display = 'block';
+  document.getElementById('userName').textContent = currentUser.displayName || currentUser.username;
+  showDashboard();
+}
+</script>
+</body>
+</html>

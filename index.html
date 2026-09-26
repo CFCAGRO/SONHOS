@@ -118,8 +118,8 @@ label{display:block;font-weight:600;margin-bottom:4px;color:var(--muted);font-si
 
 <div id="loginScreen" style="display:none">
 <div class="login-box">
-<h1>🌾 SANTAGRO</h1>
-<p>Sistema de Gestão Agrícola</p>
+<h1>🌾 SONHOS VERDE</h1>
+<p>Gestão Agrícola</p>
 <div class="form-group"><label>Usuário</label><input id="loginUser" placeholder="Digite o usuário"></div>
 <div class="form-group"><label>Senha</label><input id="loginPass" type="password" placeholder="Digite a senha" onkeydown="if(event.key==='Enter')doLogin()"></div>
 <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Entrar</button>
@@ -146,8 +146,8 @@ label{display:block;font-weight:600;margin-bottom:4px;color:var(--muted);font-si
 // ============================================================
 // EMBEDDED CONFIG
 // ============================================================
-const EMBEDDED_URL = 'https://vkerkwgiokdgcvgswfzh.supabase.co';
-const EMBEDDED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZXJrd2dpb2tkZ2N2Z3N3ZnpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwOTg1MTQsImV4cCI6MjEwNTY3NDUxNH0.pHdOjnL5v3rX_s46MvqrmPiC6zu77nDfQX9Gtsek9jk';
+const EMBEDDED_URL = 'https://kvocumperlqliqgnaitf.supabase.co';
+const EMBEDDED_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2b2N1bXBlcmxxbGlxZ25haXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODAxNDYsImV4cCI6MjEwNTY1NjE0Nn0.Jk0mffuMa9mh42UIGKvNJxOL1CWwzGR5LlcUUI2Eu3M';
 
 // ============================================================
 // CONSTANTS
@@ -680,8 +680,8 @@ function hasAccess(key) { return canView(key); }
 // INIT
 // ============================================================
 function init() {
-  const url = EMBEDDED_URL || localStorage.getItem('sb_url');
-  const key = EMBEDDED_KEY || localStorage.getItem('sb_key');
+  const url = EMBEDDED_URL || localStorage.getItem('sonhos_sb_url');
+  const key = EMBEDDED_KEY || localStorage.getItem('sonhos_sb_key');
   if (url && key) {
     sb = supabase.createClient(url, key);
     showLogin();
@@ -694,8 +694,8 @@ function saveConfig() {
   const url = document.getElementById('sbUrl').value.trim();
   const key = document.getElementById('sbKey').value.trim();
   if (!url || !key) { toast('Por favor, preencha os dois campos'); return; }
-  localStorage.setItem('sb_url', url);
-  localStorage.setItem('sb_key', key);
+  localStorage.setItem('sonhos_sb_url', url);
+  localStorage.setItem('sonhos_sb_key', key);
   sb = supabase.createClient(url, key);
   document.getElementById('configScreen').style.display = 'none';
   showLogin();
@@ -724,7 +724,7 @@ async function doLogin() {
     .select('*').eq('username', u).eq('password_hash', hash).single();
   if (error || !data) { toast('Credenciais inválidas'); return; }
   currentUser = data;
-  localStorage.setItem('session', JSON.stringify({
+  localStorage.setItem('sonhos_session', JSON.stringify({
     id: data.id, username: data.username, role: data.role,
     displayName: data.display_name, allowed_tables: data.allowed_tables,
     editable_tables: data.editable_tables
@@ -736,7 +736,7 @@ async function doLogin() {
 }
 
 function logout() {
-  localStorage.removeItem('session');
+  localStorage.removeItem('sonhos_session');
   currentUser = null;
   document.getElementById('mainApp').style.display = 'none';
   showLogin();
@@ -1327,7 +1327,6 @@ async function saveRecord(key, editId) {
 
   openModule(key);
 }
-
 // ============================================================
 // CSV EXPORT / TEMPLATE / IMPORT
 // ============================================================
@@ -2597,10 +2596,10 @@ function recalcDowntime() {
 // ============================================================
 // INIT
 // ============================================================
-const savedSession = localStorage.getItem('session');
+const savedSession = localStorage.getItem('sonhos_session');
 if (savedSession) {
-  const url = EMBEDDED_URL || localStorage.getItem('sb_url');
-  const key = EMBEDDED_KEY || localStorage.getItem('sb_key');
+  const url = EMBEDDED_URL || localStorage.getItem('sonhos_sb_url');
+  const key = EMBEDDED_KEY || localStorage.getItem('sonhos_sb_key');
   if (url && key) {
     sb = supabase.createClient(url, key);
     currentUser = JSON.parse(savedSession);
